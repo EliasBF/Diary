@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/qml/main.qml</file>
+        <file>resources/qml/BaseApplication.qml</file>
+        <file>resources/qml/DiaryWindow.qml</file>
+        <file>resources/qml/MainPage.qml</file>
+        <file>resources/qml/Diary.qml</file>
+        <file>resources/images/logo.png</file>
     </qresource>
 </RCC>

@@ -2,12 +2,12 @@
     diary
     ~~~~~
 
-	:copyright: (c) por Elias Becerra
+    :copyright: (c) por Elias Becerra
     :license: GPL2, ver LICENSE para mas detalles
 */
 
 
-#include "diary.h"
+#include "application.h"
 
 
 int main(int argc, char *argv[]) {
