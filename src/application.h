@@ -13,8 +13,10 @@
     #include <QGuiApplication>
     #include <QQmlApplicationEngine>
     #include <QQuickWindow>
+    #include <QByteArray>
 
     #include "settings.h"
+    #include "diary.h"
 
 
     class DiaryApplication : public QObject {
@@ -28,6 +30,10 @@
 
 	    // Interfaces
     	int run();
+        inline bool getEncrypted() { return this->settings->getEncrypted(); };
+        inline QByteArray getKey() { return this->settings->getKey(); };
+        void new_journal(QString name);
+        Journal* loadJournal(QString name);
 
     private:
 
@@ -35,6 +41,9 @@
     	QGuiApplication app;
     	QQmlApplicationEngine *app_engine;
         Settings *settings;
+        Journal *active_journal;
+
+        QByteArray make_key(QString password);
 
     };
 

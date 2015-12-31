@@ -11,6 +11,7 @@
 
     #include <QSettings>
     #include <QStringList>
+    #include <QByteArray>
 
 
     class Settings : public QSettings {
@@ -64,6 +65,9 @@
         Settings();
         ~Settings();
 
+        static QString createDirectory();
+        QString add_journal(QString name);
+
         inline double getWindowX() { return this->window_x; };
         inline void setWindowX(double x) {
             this->window_x = x;
@@ -100,6 +104,13 @@
             this->setValue("general/encrypted", encrypted);
             emit encryptedChanged(this->encrypted);
         };
+        inline QByteArray getKey() { return this->readKey(); };
+        void setKey(QByteArray key);
+        inline QString getPath() { return this->path; };
+        inline void setPath(QString path) {
+            this->path = path;
+            this->setValue("general/path", path);
+        }
 
     private:
 
@@ -109,6 +120,10 @@
         double window_height;
         QStringList journals;
         bool encrypted;
+        QByteArray key;
+        QString path;
+
+        QByteArray readKey();
 
     signals:
         void windowXChanged(double x);
@@ -117,6 +132,7 @@
         void windowHeightChanged(double height);
         void journalsChanged(QStringList journals);
         void encryptedChanged(bool encrypted);
+        void keyChanged(QByteArray key);
 
     };
 

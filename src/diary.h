@@ -12,13 +12,14 @@
     #define __DIARY_H
 
     #include <QObject>
-    #include <QRegExp>
+    #include <QRegularExpression>
     #include <QDateTime>
     #include <QString>
     #include <QStringList>
     #include <QMap>
     #include <QList>
     #include <QVariant>
+    #include <QDir>
 
 
     class Journal;
@@ -56,11 +57,16 @@
             WRITE setStarred
             NOTIFY starredChanged
         )
+        Q_PROPERTY(
+            QStringList tags
+            MEMBER tags
+            READ getTags
+        )
 
     public:
 
         Entry(
-            Journal *jrnl,
+            QObject *parent,
             QDateTime date,
             QString title,
             QString body,
@@ -68,10 +74,10 @@
         );
         ~Entry();
 
-        static QRegExp tag_regex(QStringList tagsymbols);
-        QStringList parse_tags();
+        static QRegularExpression tag_regex(QString tagsymbol);
         QMap<QString, QVariant> to_map();
-        bool equal(Entry other);
+        QString to_html();
+        bool equal(Entry &other);
 
         inline QString getTitle() { return this->_title; };
         inline void setTitle(QString title) {
@@ -93,16 +99,17 @@
             this->_starred = starred;
             emit starredChanged(this->_starred);
         };
+        inline QStringList getTags() { return this->tags; };
 
     private:
 
-        Journal *jrnl;
         QDateTime _date;
         QString _title;
         QString _body;
         bool _starred;
         QStringList tags;
-        bool modified;
+
+        QStringList parse_tags();
 
     signals:
 
@@ -110,6 +117,9 @@
         void titleChanged(QString title);
         void bodyChanged(QString body);
         void starredChanged(bool starred);
+
+    public slots:
+        QString unicode();
 
     };
 
@@ -124,51 +134,57 @@
             WRITE setName
             NOTIFY nameChanged
         )
+        Q_PROPERTY(
+            QList<QObject*> entries
+            MEMBER entries
+            READ getEntries
+        )
 
     public:
 
         Journal(
-            QMap<QString, QVariant> args,
-            QString name
+            QString name,
+            QString filename,
+            QObject *parent
         );
         ~Journal();
 
         int length();
-        Entry new_entry(
+        void new_entry(
             QString title,
             QString body,
             QDateTime date,
-            bool sort
+            bool starred
         );
-        QList<Entry> sort();
-        QList<Entry> filter(
+        void sort();
+        QList<QObject*> filter(
             QStringList tags,
             QDateTime start_date,
             QDateTime end_date,
             bool starred,
-            bool strict,
-            bool _short
+            bool strict
         );
-        void write(QString filename);
+        void save();
 
         inline QString getName() { return this->_name; };
         inline void setName(QString name) { 
             this->_name = name;
             emit nameChanged(this->_name);
         };
+        inline QList<QObject*> getEntries() { return this->entries; };
 
     private:
-    
-        QMap<QString, QVariant> config;
-        QString key;
-        QStringList search_tags;
+        
+        QString filename;
+        QStringList tags;
         QString _name;
+        QList<QObject*> entries;
 
-        void encrypt();
-        void decrypt();
-        void make_key();
+        QString encrypt(QString);
+        QString decrypt(QString);
         void open();
-        QList<Entry> parse();
+        void write();
+        void parse(QString journal);
 
     signals:
         void nameChanged(QString name);
