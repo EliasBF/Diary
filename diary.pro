@@ -17,16 +17,18 @@ unix:INCLUDEPATH += /usr/include
 unix:LIBPATH += /usr/lib
 #win32:LIBPATH +=
 
-unix:LIBS += -lcryptopp
+unix:LIBS += -lcrypto
 #win32:LIBS +=
 
 unix:QML_IMPORT_PATH += /usr/lib/qt/qml/QtQml
 
 # Input
 HEADERS += src/settings.h \
+       src/cryptfiledevice.h \
        src/application.h \
 	   src/diary.h
 SOURCES += src/settings.cpp \
+       src/cryptfiledevice.cpp \
        src/application.cpp \
 	   src/diary.cpp \
 	   src/main.cpp

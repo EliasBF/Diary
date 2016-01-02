@@ -30,10 +30,13 @@
 
 	    // Interfaces
     	int run();
-        inline bool getEncrypted() { return this->settings->getEncrypted(); };
         inline QByteArray getKey() { return this->settings->getKey(); };
         void new_journal(QString name);
-        Journal* loadJournal(QString name);
+        Journal* loadJournal(QString name, QString key);
+        
+    public slots:
+    
+        inline bool getEncrypted() { return this->settings->getEncrypted(); };
 
     private:
 

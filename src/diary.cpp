@@ -17,17 +17,19 @@
 #include <algorithm>
 
 #include "diary.h"
+#include "cryptfiledevice.h"
 
 
 /*
 * Journal
 */
 
-Journal::Journal(QString name, QString filename, QObject *parent)
+Journal::Journal(QString name, QString filename, QString key, QObject *parent)
 : QObject(parent) {
     
     this->_name = name;
     this->filename = filename;
+    this->key = key;
     this->open();
 }
 
@@ -38,7 +40,7 @@ int Journal::length() {
 }
 
 void Journal::new_entry(QString title, QString body, 
-                         QDateTime date, bool starred) 
+                        QDateTime date, bool starred) 
 {
     Entry *new_entry = new Entry(
         this, date, title, body, starred
@@ -70,7 +72,7 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
         this->entries.end(),
         [&](QObject *entry) {
             if ( strict ) {
-                if (( !tags.isEmpty() ||
+                if (( !tags.isEmpty() &&
                      std::all_of(
                         tags.begin(),
                         tags.end(),
@@ -89,7 +91,7 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
                 }
             }
             else {
-                if (( !tags.isEmpty() ||
+                if (( !tags.isEmpty() &&
                      std::any_of(
                         tags.begin(),
                         tags.end(),
@@ -130,9 +132,14 @@ void Journal::write() {
             journal.append(repr);
         }
     );
-
-    if ( this->parent()->property("encrypted").toBool() ) {
-        journal = this->encrypt(journal);
+    
+    bool encrypted;
+    QMetaObject::invokeMethod(
+        this->parent(), "getEncrypted", Q_RETURN_ARG(bool, encrypted)
+    );
+    if ( encrypted ) {
+        this->encrypt(journal);
+        return;
     }
 
     QFile journal_file(this->filename);
@@ -146,24 +153,55 @@ void Journal::write() {
 
 }
 
-QString Journal::encrypt(QString journal) {}
+void Journal::encrypt(QString journal) {
+    QFile crypt_file(this->filename);
+    CryptFileDevice crypt_device(
+        &crypt_file,
+        this->key.toUtf8(),
+        QString("diary").toUtf8()
+    );
+    if ( !crypt_device.open(QIODevice::WriteOnly | QIODevice::Truncate) ) {
+        return;
+    }
+    crypt_device.write(journal.toUtf8());
+    crypt_device.close();
+}
 
-QString Journal::decrypt(QString journal) {}
+QString Journal::decrypt() {
+    QFile crypt_file(this->filename);
+    CryptFileDevice crypt_device(
+        &crypt_file,
+        this->key.toUtf8(),
+        QString("diary").toUtf8()
+    );
+    if ( !crypt_device.open(QIODevice::ReadOnly) ) {
+        return "";
+    }
+    QByteArray journal = crypt_device.readAll();
+    crypt_device.close();
+    return QString::fromUtf8(journal);
+}
 
 void Journal::open() {
 
     QFile journal_file(this->filename);
+
+    bool encrypted;
+    QMetaObject::invokeMethod(
+        this->parent(), "getEncrypted", Q_RETURN_ARG(bool, encrypted)
+    );
+    if ( encrypted ) {
+        this->parse(this->decrypt());
+        return;
+    }
+
     QString journal = "";
+
     if ( journal_file.open(QIODevice::ReadOnly) ) 
     {
         QTextStream stream(&journal_file);
         journal = stream.readAll();
-        if ( this->parent()->property("encrypted").toBool() ) {
-            this->parse(this->decrypt(journal));
-        }
-        else {
-            this->parse(journal);
-        }
+        this->parse(journal);
     }
     else {
         qDebug() << "El archivo de este journal no existe";

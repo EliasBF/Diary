@@ -7,7 +7,9 @@
 
 
 #include <QDir>
+#include <QSaveFile>
 #include <QFile>
+#include <QDebug>
 
 #include "settings.h"
 
@@ -33,8 +35,8 @@ Settings::Settings()
         this->setValue("data/journals", QStringList());
 
         // General
-        this->setValue("general/encrypted", false);
-        this->setValue("general/path", this->fileName().remove("diary.conf"));
+        this->setValue("General/encrypted", true);
+        this->setValue("General/path", this->fileName().remove("diary.conf"));
 
     }
     
@@ -43,8 +45,8 @@ Settings::Settings()
     this->window_width = this->value("window/width").toDouble();
     this->window_height = this->value("window/height").toDouble();
     this->journals = this->value("data/journals").toStringList();
-    this->encrypted = this->value("general/encrypted").toBool();
-    this->path = this->value("general/path").toString();
+    this->encrypted = this->value("General/encrypted").toBool();
+    this->path = this->value("General/path").toString();
 
 }
 
@@ -58,20 +60,25 @@ QString Settings::createDirectory() {
 
 QString Settings::add_journal(QString name) {
     QString filename = (this->getPath() + "journals/" + name + ".txt");
+    qDebug() << this->getPath();
+    qDebug() << this->fileName();
+    qDebug() << filename;
     QStringList update_journals = this->getJournals();
     update_journals << (name + "#" + filename);
     this->setJournals(update_journals);
-    QFile(filename).open(QIODevice::WriteOnly);
+    QSaveFile journal_file(filename);
+    journal_file.open(QIODevice::WriteOnly);
+    journal_file.commit();
     return filename;
 }
 
 void Settings::setKey(QByteArray key) {
     
     QString filename = (this->getPath() + ".key");
-    QFile keyfile(filename);
+    QSaveFile keyfile(filename);
     if ( keyfile.open(QIODevice::WriteOnly) ) {
         keyfile.write(key);
-        keyfile.close();
+        keyfile.commit();
     }
 
 }

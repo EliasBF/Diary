@@ -145,6 +145,7 @@
         Journal(
             QString name,
             QString filename,
+            QString key,
             QObject *parent
         );
         ~Journal();
@@ -178,10 +179,11 @@
         QString filename;
         QStringList tags;
         QString _name;
+        QString key;
         QList<QObject*> entries;
 
-        QString encrypt(QString);
-        QString decrypt(QString);
+        void encrypt(QString);
+        QString decrypt();
         void open();
         void write();
         void parse(QString journal);

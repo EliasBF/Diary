@@ -12,6 +12,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QCryptographicHash>
+#include <QDateTime>
 
 #include "application.h"
 
@@ -34,18 +35,34 @@ int DiaryApplication::run() {
     
     this->app_engine = new QQmlApplicationEngine();
     this->app_engine->load(QUrl("qrc:/resources/qml/Diary.qml"));
+    
+    //this->new_journal("default");
 
-    this->active_journal = this->loadJournal("default");
+    /*this->active_journal = this->loadJournal("default", "elias");
     this->active_journal->new_entry(
-        "Super Test", 
-        "Saluditos a todos mis @amigos los quiero saludar por este año nuevo.\n\nespero que les vaya muy bien este año.\n\nAdios.",
+        "Prueba",
+        "Esta es una prueba",
         QDateTime::currentDateTime(),
         false
     );
     this->active_journal->save();
+    
     qDebug() << this->active_journal->length();
-    //qDebug() << this->journals.count();
-    //qDebug() << app_engine->rootObjects()[0]->objectName();
+    for ( QObject *entrie : this->active_journal->getEntries() ) {
+    	qDebug() << "Entrada";
+    	qDebug() << entrie->property("title");
+    	qDebug() << entrie->property("body");
+    	qDebug() << entrie->property("starred");
+    	qDebug() << entrie->property("date");
+    	qDebug() << "Fin Entrada";
+    }*/
+    
+    /*this->settings->setKey(this->make_key("Elias5emotionalhardcore"));
+    if (this->settings->getKey() == this->make_key("Elias5emotionalhardcore")) {qDebug() << "Son iguales";}
+    else {qDebug() << "No son iguales";}
+    if (this->settings->getKey() == this->make_key("El perro de maris juana")) {qDebug() << "Son iguales";}
+    else {qDebug() << "No son iguales";}*/
+        
     return this->app.exec();
 
 }
@@ -67,7 +84,7 @@ void DiaryApplication::new_journal(QString name) {
     this->journals.append(jrnl);*/
 }
 
-Journal* DiaryApplication::loadJournal(QString name) {
+Journal* DiaryApplication::loadJournal(QString name, QString key) {
     QString filename;
     for ( QString &journal : this->settings->getJournals() ) {
         if ( journal.contains(name) ) {
@@ -78,6 +95,7 @@ Journal* DiaryApplication::loadJournal(QString name) {
     return new Journal(
         name,
         filename,
+        key,
         this
     );
 }
