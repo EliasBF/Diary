@@ -10,6 +10,9 @@ BaseApplication {
         app: diary
     }
 
+    signal selectedJournal(string name, string key)
+    signal createdJournal(string name)
+
     function createWindow() {
         var new_window = diary_window.createObject(diary);
         return new_window;
@@ -20,6 +23,6 @@ BaseApplication {
     }
 
     Component.onCompleted: {
-        diary.load();
+        // ...
     }
 }

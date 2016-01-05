@@ -60,16 +60,13 @@ QString Settings::createDirectory() {
 
 QString Settings::add_journal(QString name) {
     QString filename = (this->getPath() + "journals/" + name + ".txt");
-    qDebug() << this->getPath();
-    qDebug() << this->fileName();
-    qDebug() << filename;
     QStringList update_journals = this->getJournals();
     update_journals << (name + "#" + filename);
     this->setJournals(update_journals);
     QSaveFile journal_file(filename);
     journal_file.open(QIODevice::WriteOnly);
     journal_file.commit();
-    return filename;
+    return (name + "#" + filename);
 }
 
 void Settings::setKey(QByteArray key) {

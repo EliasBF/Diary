@@ -36,5 +36,6 @@ RESOURCES += resources.qrc
 OTHER_FILES += resources/qml/BaseApplication.qml \
 	       resources/qml/DiaryWindow.qml \
 	       resources/qml/MainPage.qml \
+           resources/qml/SwitchDialog.qml \
 	       resources/qml/Diary.qml \
 	       resources/images/logo.png

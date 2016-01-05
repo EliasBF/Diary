@@ -115,6 +115,23 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
 
 }
 
+QVariantMap Journal::getEntries() {
+    qDebug() << this->length();
+    QVariantMap entries;
+    int index = 1;
+    for ( QObject *entry : this->entries ) {
+        QVariantMap n_entry;
+        n_entry.insert("title", entry->property("title"));
+        n_entry.insert("body", entry->property("body"));
+        n_entry.insert("starred", entry->property("starred"));
+        n_entry.insert("date", entry->property("date"));
+        n_entry.insert("tags", entry->property("tags"));
+        entries.insert(QString::number(index), n_entry);
+        index++;
+    }
+    return entries;
+}
+
 void Journal::save() { this->write(); }
 
 void Journal::write() {

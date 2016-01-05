@@ -134,11 +134,6 @@
             WRITE setName
             NOTIFY nameChanged
         )
-        Q_PROPERTY(
-            QList<QObject*> entries
-            MEMBER entries
-            READ getEntries
-        )
 
     public:
 
@@ -172,7 +167,7 @@
             this->_name = name;
             emit nameChanged(this->_name);
         };
-        inline QList<QObject*> getEntries() { return this->entries; };
+        QVariantMap getEntries();
 
     private:
         

@@ -14,6 +14,7 @@
     #include <QQmlApplicationEngine>
     #include <QQuickWindow>
     #include <QByteArray>
+    #include <QVariant>
 
     #include "settings.h"
     #include "diary.h"
@@ -31,12 +32,13 @@
 	    // Interfaces
     	int run();
         inline QByteArray getKey() { return this->settings->getKey(); };
-        void new_journal(QString name);
-        Journal* loadJournal(QString name, QString key);
+        QVariantMap list_journals();
         
     public slots:
     
         inline bool getEncrypted() { return this->settings->getEncrypted(); };
+        void loadJournal(QString name, QString key);
+        void new_journal(QString name);
 
     private:
 
@@ -45,8 +47,10 @@
     	QQmlApplicationEngine *app_engine;
         Settings *settings;
         Journal *active_journal;
+        QObject *root;
 
         QByteArray make_key(QString password);
+        void setRootObject(QObject *root);
 
     };
 
