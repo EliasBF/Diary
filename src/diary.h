@@ -140,7 +140,6 @@
         Journal(
             QString name,
             QString filename,
-            QString key,
             QObject *parent
         );
         ~Journal();
@@ -174,7 +173,6 @@
         QString filename;
         QStringList tags;
         QString _name;
-        QString key;
         QList<QObject*> entries;
 
         void encrypt(QString);

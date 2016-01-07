@@ -10,16 +10,28 @@ BaseApplication {
         app: diary
     }
 
-    signal selectedJournal(string name, string key)
+    property Component welcome_window: WelcomeWindow {
+        app: diary
+    }
+    
+    signal configuredDiary(string journal, string key)
+    signal configuredComplete()
+    signal selectedJournal(string name)
     signal createdJournal(string name)
+    signal validatedKey(string key)
 
-    function createWindow() {
-        var new_window = diary_window.createObject(diary);
+    function createWindow(window) {
+        var new_window = window.createObject(diary);
         return new_window;
     }
 
-    function load() {
-        var diary_application = createWindow();
+    function load(configured) {
+        if ( configured ) {
+            var diary_application = createWindow(welcome_window);
+        }
+        else {
+            var diary_application = createWindow(diary_window);
+        }
     }
 
     Component.onCompleted: {

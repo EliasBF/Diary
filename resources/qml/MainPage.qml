@@ -369,7 +369,7 @@ Page {
 
                 onClicked: {
                     selected = !selected;
-                    page.current_entry.selected = selected;
+                    page.current_entry.starred = selected;
                 }
             }
 

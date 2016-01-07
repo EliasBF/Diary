@@ -4,6 +4,7 @@ import Material 0.1
 
 ApplicationWindow {
     id: root
+    objectName: "main_window"
 
 // {{{ Properties
     
@@ -16,6 +17,7 @@ ApplicationWindow {
     // clientSideDecorations: true
 
     property bool fullscreen: false
+    property string current_journal
 
     theme {
         primaryColor: Palette.colors["purple"]["600"]
@@ -45,15 +47,45 @@ ApplicationWindow {
         main_page.state = "journal";
     }
 
+    function valid_key(key) {
+        key_dialog.close();
+        switch_dialog.show();
+    }
+
+    function invalid_key() {
+        key_dialog.state = "warning";
+    }
+
 // Functions }}}
 
 // {{{ Components
+    
+    // Alias para acceder al estado del dialogo para cambiar de diarios desde
+    // el manejador del dialogo de autenticacion.
+    property alias sd: switch_dialog
 
     initialPage: MainPage { id: main_page }
+
     SwitchDialog { 
         id: switch_dialog
         journals: root.app.journal_model
         state: root.app.journal_model.count == 0 ? "nothing" : "start"
+
+        onSwitched: {
+            root.current_journal = journal_name;
+            if ( switch_dialog.state != "switch" ) {
+                switch_dialog.state == "switch";
+            }
+            root.app.selectedJournal(root.current_journal);       
+        }
+    }
+
+    KeyDialog {
+        id: key_dialog
+
+        onTried: {
+            root.app.validatedKey(key);
+        }
     }
 
     Timer {
@@ -63,7 +95,7 @@ ApplicationWindow {
         running: false
 
         onTriggered: {
-           switch_dialog.show(); 
+           key_dialog.show(); 
         }
     }
 

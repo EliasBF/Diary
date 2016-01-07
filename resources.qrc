@@ -2,7 +2,9 @@
     <qresource prefix="/">
         <file>resources/qml/BaseApplication.qml</file>
         <file>resources/qml/DiaryWindow.qml</file>
+        <file>resources/qml/WelcomeWindow.qml</file>
         <file>resources/qml/MainPage.qml</file>
+        <file>resources/qml/KeyDialog.qml</file>
         <file>resources/qml/SwitchDialog.qml</file>
         <file>resources/qml/Diary.qml</file>
         <file>resources/images/logo.png</file>

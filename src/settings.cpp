@@ -28,8 +28,8 @@ Settings::Settings()
         // Window
         this->setValue("window/x", 0);
         this->setValue("window/y", 0);
-        this->setValue("window/width", 900.0);
-        this->setValue("window/height", 400.0);
+        this->setValue("window/width", 1000.0);
+        this->setValue("window/height", 600.0);
 
         // Journals
         this->setValue("data/journals", QStringList());
@@ -37,6 +37,7 @@ Settings::Settings()
         // General
         this->setValue("General/encrypted", true);
         this->setValue("General/path", this->fileName().remove("diary.conf"));
+        this->setValue("General/configured", false);
 
     }
     

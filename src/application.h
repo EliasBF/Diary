@@ -23,6 +23,7 @@
     class DiaryApplication : public QObject {
 
 	    Q_OBJECT
+        Q_PROPERTY(QByteArray key MEMBER key)
 
     public:
 	
@@ -35,10 +36,13 @@
         QVariantMap list_journals();
         
     public slots:
-    
+        
+        void prepareDiary(QString journal, QString key);
+        void loadDiary();
         inline bool getEncrypted() { return this->settings->getEncrypted(); };
-        void loadJournal(QString name, QString key);
+        void loadJournal(QString name);
         void new_journal(QString name);
+        void authenticated(QString key);
 
     private:
 
@@ -48,9 +52,10 @@
         Settings *settings;
         Journal *active_journal;
         QObject *root;
+        QByteArray key;
 
         QByteArray make_key(QString password);
-        void setRootObject(QObject *root);
+        void setRootAndLoad(QObject *root);
 
     };
 

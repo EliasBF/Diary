@@ -13,6 +13,7 @@
 #include <QStringList>
 #include <QCryptographicHash>
 #include <QDateTime>
+#include <QQmlContext>
 
 #include "application.h"
 
@@ -36,11 +37,9 @@ int DiaryApplication::run() {
     this->app_engine = new QQmlApplicationEngine();
     this->app_engine->load(QUrl("qrc:/resources/qml/Diary.qml"));
 
-    this->setRootObject(this->app_engine->rootObjects().first());
-
-    this->root->setProperty("journals", this->list_journals());
-    QMetaObject::invokeMethod(this->root, "startDiary");
-    QMetaObject::invokeMethod(this->root, "load");
+    this->setRootAndLoad(this->app_engine->rootObjects().first());
+    
+    //this->loadJournal("personal");
     
     //qDebug() << this->root->children()[4]->property("fullscreen");
     
@@ -54,6 +53,7 @@ int DiaryApplication::run() {
         false
     );
     this->active_journal->save();
+    
     
     qDebug() << this->active_journal->length();
     for ( QObject *entrie : this->active_journal->getEntries() ) {
@@ -78,24 +78,71 @@ int DiaryApplication::run() {
 
 }
 
-void DiaryApplication::setRootObject(QObject *root) {
+void DiaryApplication::setRootAndLoad(QObject *root) {
     
     if ( this->root != 0 ) { this->root->disconnect(this); }
 
     this->root = root;
 
-    if ( this->root ) {
-        QObject::connect(
+    // Conectar señales desde QML
+    QObject::connect(
+        this->root,
+        SIGNAL(selectedJournal(QString)),
+        this,
+        SLOT(loadJournal(QString))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(createdJournal(QString)),
+        this,
+        SLOT(new_journal(QString))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(validatedKey(QString)),
+        this,
+        SLOT(authenticated(QString))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(configuredDiary(QString, QString)),
+        this,
+        SLOT(prepareDiary(QString, QString))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(configuredComplete()),
+        this,
+        SLOT(loadDiary())
+    );
+
+    this->loadDiary();
+
+}
+
+void DiaryApplication::prepareDiary(QString journal, QString key) {
+    this->new_journal(journal);
+    this->settings->setKey(this->make_key(key));
+    this->settings->setConfigured(true);
+    this->root->findChild<QQuickWindow*>("welcome")->setProperty("is_configured", true);
+}
+
+void DiaryApplication::loadDiary() {
+    if ( this->settings->getConfigured() ) {
+        this->root->setProperty("journals", this->list_journals());
+        QMetaObject::invokeMethod(this->root, "startDiary");
+
+        QMetaObject::invokeMethod(
             this->root,
-            SIGNAL(selectedJournal(QString, QString)),
-            this,
-            SLOT(loadJournal(QString, QString))
+            "load",
+            Q_ARG(QVariant, QVariant::fromValue(false))
         );
-        QObject::connect(
+    }
+    else {
+        QMetaObject::invokeMethod(
             this->root,
-            SIGNAL(createdJournal(QString)),
-            this,
-            SLOT(new_journal(QString))
+            "load",
+            Q_ARG(QVariant, QVariant::fromValue(true))
         );
     }
 }
@@ -108,13 +155,30 @@ QByteArray DiaryApplication::make_key(QString password) {
     ).toHex();
 }
 
+void DiaryApplication::authenticated(QString key) {
+    if ( this->settings->getKey() == this->make_key(key) ) {
+        this->key = this->make_key(key);
+        QMetaObject::invokeMethod(
+            this->root->findChild<QQuickWindow*>("main_window"),
+            "valid_key",
+            Q_ARG(QVariant, QVariant::fromValue(key))
+        );   
+    }
+    else {
+        QMetaObject::invokeMethod(
+            this->root->findChild<QQuickWindow*>("main_window"),
+            "invalid_key"
+        );
+    }
+}
+
 void DiaryApplication::new_journal(QString name) {
     QStringList parts = this->settings->add_journal(name.toLower()).split("#");
     QVariantMap journal = {{parts[0], parts[1]}};
     this->root->setProperty("journals", journal);
 }
 
-void DiaryApplication::loadJournal(QString name, QString key) {
+void DiaryApplication::loadJournal(QString name) {
     QString filename;
     for ( QString &journal : this->settings->getJournals() ) {
         if ( journal.contains(name.toLower()) ) {
@@ -125,7 +189,6 @@ void DiaryApplication::loadJournal(QString name, QString key) {
     this->active_journal = new Journal(
         name.toLower(),
         filename,
-        key,
         this
     );
 
@@ -141,7 +204,7 @@ void DiaryApplication::loadJournal(QString name, QString key) {
     );
 
     QMetaObject::invokeMethod(
-        this->root->children()[4],
+        this->root->findChild<QQuickWindow*>("main_window"),
         "displayJournal",
         Q_ARG(QVariant, QVariant::fromValue(name))
     );

@@ -9,6 +9,9 @@ Dialog {
     property alias journals: journals_list.model
     property string old_state
 
+    signal switched(string journal_name)
+    signal created()
+
     states: [
         State {
             name: "start"
@@ -190,9 +193,8 @@ Dialog {
         if ( journals_list.visible && dialog.state != "nothing" ) {
             event.accepted = true;
             close();
-            if ( dialog.state != "switch" ) { dialog.state = "switch"; }
             if ( journals_list.currentItem.selected ) { return; }
-            root.app.selectedJournal(journals_list.currentItem.text, "elias");
+            dialog.switched(journals_list.currentItem.text);
         }
         else {
             event.accepted = false;
@@ -217,7 +219,7 @@ Dialog {
                 dialog.state = dialog.old_state;
             }
             else {
-                root.app.selectedJournal(new_journal.new_journal_name, "elias");
+                root.app.selectedJournal(new_journal.new_journal_name);
             }
         }
         else {

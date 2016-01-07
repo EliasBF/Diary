@@ -110,6 +110,12 @@
         inline void setPath(QString path) {
             this->path = path;
             this->setValue("general/path", path);
+        };
+        inline bool getConfigured() {
+            return this->value("General/configured").toBool();
+        };
+        inline void setConfigured(bool configured) {
+            this->setValue("General/configured", configured);
         }
 
     private:

@@ -24,12 +24,11 @@
 * Journal
 */
 
-Journal::Journal(QString name, QString filename, QString key, QObject *parent)
+Journal::Journal(QString name, QString filename, QObject *parent)
 : QObject(parent) {
     
     this->_name = name;
     this->filename = filename;
-    this->key = key;
     this->open();
 }
 
@@ -172,9 +171,10 @@ void Journal::write() {
 
 void Journal::encrypt(QString journal) {
     QFile crypt_file(this->filename);
+    qDebug() << this->parent()->property("key").toByteArray();
     CryptFileDevice crypt_device(
         &crypt_file,
-        this->key.toUtf8(),
+        this->parent()->property("key").toByteArray(),
         QString("diary").toUtf8()
     );
     if ( !crypt_device.open(QIODevice::WriteOnly | QIODevice::Truncate) ) {
@@ -188,7 +188,7 @@ QString Journal::decrypt() {
     QFile crypt_file(this->filename);
     CryptFileDevice crypt_device(
         &crypt_file,
-        this->key.toUtf8(),
+        this->parent()->property("key").toByteArray(),
         QString("diary").toUtf8()
     );
     if ( !crypt_device.open(QIODevice::ReadOnly) ) {
