@@ -1,11 +1,3 @@
-/*
-
-    diary.application
-    ~~~~~~~~~~~~~~~~~
-
-*/
-
-
 #include <algorithm>
 
 #include <QUrl>
@@ -14,6 +6,9 @@
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QQmlContext>
+#include <QTranslator>
+#include <QLocale>
+#include <QLibraryInfo>
 
 #include "application.h"
 
@@ -25,6 +20,16 @@ DiaryApplication::DiaryApplication(int &argc, char *argv[])
     this->app.setOrganizationDomain("diary-project.me");
     this->app.setApplicationName("diary");
 
+    QTranslator qt_translator;
+    qt_translator.load(
+        "qt_" + QLocale::system().name(),
+        QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    this->app.installTranslator(&qt_translator);
+
+    QTranslator diary_translator;
+    diary_translator.load("qrc:/translations/" + QLocale::system().name());
+    this->app.installTranslator(&diary_translator);
+
     this->settings = new Settings();
 
 }
@@ -33,46 +38,11 @@ DiaryApplication::~DiaryApplication() {}
 
 
 int DiaryApplication::run() {
-    
+
     this->app_engine = new QQmlApplicationEngine();
     this->app_engine->load(QUrl("qrc:/resources/qml/Diary.qml"));
 
     this->setRootAndLoad(this->app_engine->rootObjects().first());
-    
-    //this->loadJournal("personal");
-    
-    //qDebug() << this->root->children()[4]->property("fullscreen");
-    
-    //this->new_journal("default");
-
-    
-    /*this->active_journal->new_entry(
-        "Prueba",
-        "Esta es una prueba",
-        QDateTime::currentDateTime(),
-        false
-    );
-    this->active_journal->save();
-    
-    
-    qDebug() << this->active_journal->length();
-    for ( QObject *entrie : this->active_journal->getEntries() ) {
-    	qDebug() << "Entrada";
-    	qDebug() << entrie->property("title");
-    	qDebug() << entrie->property("body");
-    	qDebug() << entrie->property("starred");
-    	qDebug() << entrie->property("date");
-    	qDebug() << "Fin Entrada";
-    }*/
-    
-    /*this->settings->setKey(this->make_key("Elias5emotionalhardcore"));
-    if (this->settings->getKey() == this->make_key("Elias5emotionalhardcore")) {qDebug() << "Son iguales";}
-    else {qDebug() << "No son iguales";}
-    if (this->settings->getKey() == this->make_key("El perro de maris juana")) {qDebug() << "Son iguales";}
-    else {qDebug() << "No son iguales";}*/
-    
-    /*QMap<QString, QString> map = this->list_journals();
-    qDebug() << map;*/
         
     return this->app.exec();
 
@@ -84,7 +54,6 @@ void DiaryApplication::setRootAndLoad(QObject *root) {
 
     this->root = root;
 
-    // Conectar señales desde QML
     QObject::connect(
         this->root,
         SIGNAL(selectedJournal(QString)),

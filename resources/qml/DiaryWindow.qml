@@ -14,7 +14,6 @@ ApplicationWindow {
     visible: true
     minimumWidth: Units.dp(950)
     minimumHeight: Units.dp(400)
-    // clientSideDecorations: true
 
     property bool fullscreen: false
     property string current_journal
@@ -59,10 +58,6 @@ ApplicationWindow {
 // Functions }}}
 
 // {{{ Components
-    
-    // Alias para acceder al estado del dialogo para cambiar de diarios desde
-    // el manejador del dialogo de autenticacion.
-    property alias sd: switch_dialog
 
     initialPage: MainPage { id: main_page }
 

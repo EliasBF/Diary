@@ -52,7 +52,6 @@ Item {
 // {{{ Functions
 
     function startDiary() {
-        console.log("Locale name: " + Qt.locale().name); 
 
         if ( journal_model.count != 0 ) {
             application.journals = null;
@@ -68,7 +67,6 @@ Item {
             }
         }
 
-        console.log("Diary is running...");
     }
 
     function activate_journal(name) {

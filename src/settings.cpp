@@ -1,11 +1,3 @@
-/*
-
-    diary.settings
-    ~~~~~~~~~~~~~~
-
-*/
-
-
 #include <QDir>
 #include <QSaveFile>
 #include <QFile>

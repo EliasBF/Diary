@@ -8,5 +8,6 @@
         <file>resources/qml/SwitchDialog.qml</file>
         <file>resources/qml/Diary.qml</file>
         <file>resources/images/logo.png</file>
+        <file>translations/en_EN.ts</file>
     </qresource>
 </RCC>

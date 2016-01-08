@@ -1,12 +1,3 @@
-/*
-
-    diary.diary
-    ~~~~~~~~~~~
-
-    Clases para representar los diarios y las entradas de cada uno
-
-*/
-
 #ifndef __DIARY_H
 
     #define __DIARY_H

@@ -1,12 +1,3 @@
-/*
-
-    diary.diary
-    ~~~~~~~~~~~
-
-    Clases para representar los diarios y las entradas de cada uno
-
-*/
-
 #include <QFile>
 #include <QTextStream>
 #include <QRegularExpressionMatch>
@@ -19,10 +10,6 @@
 #include "diary.h"
 #include "cryptfiledevice.h"
 
-
-/*
-* Journal
-*/
 
 Journal::Journal(QString name, QString filename, QObject *parent)
 : QObject(parent) {
@@ -250,10 +237,6 @@ void Journal::parse(QString journal) {
 
 }
 
-
-/*
-* Entry
-*/
 
 Entry::Entry(QObject *parent, QDateTime date,
              QString title, QString body,

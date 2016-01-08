@@ -1,10 +1,3 @@
-/*
-
-    diary.application
-    ~~~~~~~~~~~~~~~~~
-
-*/
-
 #ifndef __APPLICATION_H
 
     #define __APPLICATION_H
@@ -30,7 +23,6 @@
         DiaryApplication(int &argc, char** argv);
     	~DiaryApplication();
 
-	    // Interfaces
     	int run();
         inline QByteArray getKey() { return this->settings->getKey(); };
         QVariantMap list_journals();
@@ -46,7 +38,6 @@
 
     private:
 
-	    // Atributos
     	QGuiApplication app;
     	QQmlApplicationEngine *app_engine;
         Settings *settings;

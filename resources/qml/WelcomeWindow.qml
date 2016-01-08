@@ -40,7 +40,7 @@ ApplicationWindow {
                 PropertyChanges {
                     target: next;
                     visible: true;
-                    text: "Comenzar"
+                    text: qStr("Comenzar")
                 }
                 PropertyChanges {
                     target: previous;
@@ -52,7 +52,7 @@ ApplicationWindow {
                 extend: "start"
                 PropertyChanges {
                     target: next;
-                    text: "Siguiente";
+                    text: qsTr("Siguiente");
                 }
                 PropertyChanges {
                     target: previous;
@@ -98,7 +98,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignLeft
 
-                text: "Bienvenido a Diary"
+                text: qsTr("Bienvenido a Diary")
             }
 
             Label {
@@ -107,7 +107,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignLeft
 
-                text: "Diary es tu espacio personal y privado, en el puedes escribir sucesos de tu vida además de todos tus pensamientos e ideas, Diary te brinda un lugar seguro donde escribir todas tus pensamientos y una manera sencilla de mantenerlos ordenados y a tu disposición."
+                text: qsTr("Diary es tu espacio personal y privado, en el puedes escribir sucesos de tu vida además de todos tus pensamientos e ideas, Diary te brinda un lugar seguro donde escribir todas tus pensamientos y una manera sencilla de mantenerlos ordenados y a tu disposición.")
             }
         }
     }
@@ -131,7 +131,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignLeft
 
-                text: "Diary protege todos tus pensamientos e ideas para que solo tu puedas acceder a ellas. Para eso es necesario una contraseña o frase secreta que utilizaras cada vez que ingreses en Diary."
+                text: qsTr("Diary protege todos tus pensamientos e ideas para que solo tu puedas acceder a ellas. Para eso es necesario una contraseña o frase secreta que utilizaras cada vez que ingreses en Diary.")
             }
             
             List.Standard {
@@ -146,7 +146,7 @@ ApplicationWindow {
                         id: key_one
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillWidth: true
-                        placeholderText: "Tu frase"
+                        placeholderText: qsTr("Tu frase")
                         floatingLabel: true
                         echoMode: TextInput.Password
                     }
@@ -179,7 +179,7 @@ ApplicationWindow {
                         id: key_two
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillWidth: true
-                        placeholderText: "Repite tu frase"
+                        placeholderText: qsTr("Repite tu frase")
                         floatingLabel: false
                         echoMode: TextInput.Password
 
@@ -223,7 +223,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
                 color: Theme.accentColor
 
-                text: key_one.hasError ? "Tus frases no coinciden." : "Utiliza una frase larga con numeros y mayusculas para más seguridad"
+                text: key_one.hasError ? qsTr("Tus frases no coinciden.") : qsTr("Utiliza una frase larga con numeros y mayusculas para más seguridad")
             }
         }
     }
@@ -247,7 +247,7 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignLeft
 
-                text: "Diary organiza todos tus pensamientos e ideas en diarios, los que puedes utilizar para agrupar tus pensamientos por categorias o temas. Puedes usar Diary como tu diario personal o para escribir sobre algo en particular. Tu decides como organizar tus ideas."
+                text: qsTr("Diary organiza todos tus pensamientos e ideas en diarios, los que puedes utilizar para agrupar tus pensamientos por categorias o temas. Puedes usar Diary como tu diario personal o para escribir sobre algo en particular. Tu decides como organizar tus ideas.")
             }
             
             List.Standard {
@@ -262,7 +262,7 @@ ApplicationWindow {
                         id: journal_name
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillWidth: true
-                        placeholderText: "Nombre"
+                        placeholderText: qsTr("Nombre")
                         floatingLabel: true
 
                         onTextChanged: {
@@ -290,7 +290,7 @@ ApplicationWindow {
                 color: Theme.accentColor
                 height: contentHeight
 
-                text: journal_name.hasError ? "Para los nombres de tus diarios solo debes utilizar letras y como minimo cinco letras." : "Escribe el nombre de tu primer diario."
+                text: journal_name.hasError ? qsTr("Para los nombres de tus diarios solo debes utilizar letras y como minimo cinco letras.") : qsTr("Escribe el nombre de tu primer diario.")
             } 
         }
     }
@@ -325,7 +325,7 @@ ApplicationWindow {
 
                     Label {
                         Layout.alignment: Qt.AlignVCenter
-                        text: "Gracias por utilizar Diary"
+                        text: qsTr("Gracias por utilizar Diary")
                         style: "display2"
                     }
                 }
@@ -337,14 +337,14 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
 
-                text: "Todo listo para comenzar !"
+                text: qsTr("Todo listo para comenzar !")
             }
 
             Button {
                 Layout.alignment: Qt.AlignHCenter
                 elevation: 1
                 backgroundColor: Theme.accentColor
-                text: "Ir a Diary"
+                text: qsTr("Ir a Diary")
                 onClicked: {
                     root.app.configuredComplete();
                     root.close();
@@ -359,7 +359,7 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
                 color: Theme.accentColor
 
-                text: "Si necesitas ayuda para utilizar Diary puedes revisar el manual de ayuda desde el boton con forma de corazon una vez que inicies Diary."
+                text: qsTr("Si necesitas ayuda para utilizar Diary puedes revisar el manual de ayuda desde el boton con forma de corazon una vez que inicies Diary.")
             } 
         }
 
@@ -390,7 +390,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
 
-                    text: "Preparando y configurando Diary..."
+                    text: qsTr("Preparando y configurando Diary...")
                 }
             }
         }
@@ -415,7 +415,7 @@ ApplicationWindow {
             id: previous
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             context: "dialog"
-            text: "Atras"
+            text: qsTr("Atras")
             textColor: Theme.accentColor
 
             onClicked: {
@@ -431,7 +431,7 @@ ApplicationWindow {
             id: next
             Layout.alignment: Qt.AlignRight | Qt.AlignTop
             context: "dialog"
-            text: "Comenzar"
+            text: qsTr("Comenzar")
             textColor: Theme.accentColor
 
             onClicked: {

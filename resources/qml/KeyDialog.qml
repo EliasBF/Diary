@@ -21,7 +21,7 @@ Dialog {
             name: "warning";
             PropertyChanges {
                 target: key_text;
-                helperText: "Frase incorrecta";
+                helperText: qsTr("Frase incorrecta");
                 hasError: true
             }
         },
@@ -29,18 +29,18 @@ Dialog {
             name: "nothing";
             PropertyChanges {
                 target: key_text;
-                helperText: "Debes escribir una frase";
+                helperText: qsTr("Debes escribir una frase");
                 hasError: true
             }
         }
     ]
     
-    positiveButtonText: "Aceptar"
-    negativeButtonText: "Salir"
+    positiveButtonText: qsTr("Aceptar")
+    negativeButtonText: qsTr("Salir")
 
     minimumWidth: parent.width * 0.4
     title: "Diary"
-    text: "Ingresa tu frase secreta para acceder"
+    text: qsTr("Ingresa tu frase secreta para acceder")
 
     TextField {
         id: key_text

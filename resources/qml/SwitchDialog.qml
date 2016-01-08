@@ -18,9 +18,9 @@ Dialog {
             PropertyChanges {
                 target: dialog;
                 dismissOnTap: false;
-                title: "Tus Diarios";
-                text: "¿ Cual deseas abrir ?";
-                positiveButtonText: "Nuevo diario";
+                title: qsTr("Tus Diarios");
+                text: qsTr("¿ Cual deseas abrir ?");
+                positiveButtonText: qsTr("Nuevo diario");
                 width: 300
             }
             PropertyChanges {
@@ -42,10 +42,10 @@ Dialog {
             extend: "start"
             PropertyChanges {
                 target: dialog;
-                title: "Nuevo Diario"
+                title: qsTr("Nuevo Diario")
                 text: ""
-                positiveButtonText: "Crear"
-                negativeButtonText: "Cancelar"
+                positiveButtonText: qsTr("Crear")
+                negativeButtonText: qsTr("Cancelar")
                 width: parent.width * 0.5
             }
             PropertyChanges {
@@ -79,7 +79,7 @@ Dialog {
             PropertyChanges {
                 target: dialog;
                 title: "Diary"
-                text: "No tienes ningun diario, crea uno para comenzar"
+                text: qsTr("No tienes ningun diario, crea uno para comenzar")
             }
             PropertyChanges {
                 target: journals_list;
@@ -90,7 +90,7 @@ Dialog {
 
     state: "start"
 
-    negativeButtonText: "No cambiar"
+    negativeButtonText: qsTr("No cambiar")
 
     ListView {
         id: journals_list
@@ -151,7 +151,7 @@ Dialog {
                     name: "fine"
                     PropertyChanges {
                         target: journal_name_edit;
-                        helperText: "Escribe el nombre de tu nuevo diario (solo puede contener letras)"
+                        helperText: qsTr("Escribe el nombre de tu nuevo diario (solo puede contener letras)")
                         hasError: false
                     }
                 },
@@ -159,7 +159,7 @@ Dialog {
                     name: "warning"
                     PropertyChanges {
                         target: journal_name_edit;
-                        helperText: "Escribe un nombre que contenga minimo 5 letras"
+                        helperText: qsTr("Escribe un nombre que contenga minimo 5 letras")
                         hasError: true
                     }
                 }
@@ -167,7 +167,7 @@ Dialog {
 
             anchors.centerIn: parent
 
-            placeholderText: "Nombre..."
+            placeholderText: qsTr("Nombre")
             width: parent.width
 
             characterLimit: 100

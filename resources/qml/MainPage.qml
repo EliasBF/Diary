@@ -93,7 +93,7 @@ Page {
                         Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                         
                         action: Action {
-                            name: "Nueva Entrada"
+                            name: qsTr("Nueva Entrada")
                             iconName: "awesome/plus"
                         }
                     }
@@ -104,7 +104,7 @@ Page {
                 id: entry_item
 
                 text: model.title
-                subText: Qt.formatDateTime(model.date, "dd/MM/yyyy 'a las' hh:mm")
+                subText: Qt.formatDateTime(model.date, ("dd/MM/yyyy '" + qsTr("a las") + "' hh:mm"))
 
                 showDivider: true
 
@@ -150,7 +150,7 @@ Page {
 
                         Lists.Standard {
                             id: action_export
-                            text: "Exportar"
+                            text: qsTr("Exportar")
                             iconName: "awesome/files_o"
                             onClicked: {
                                 entry_menu.close();
@@ -159,7 +159,7 @@ Page {
 
                         Lists.Standard {
                             id: action_del
-                            text: "Eliminar"
+                            text: qsTr("Eliminar")
                             iconName: "awesome/trash"
                             onClicked: {
                                 entry_menu.close()
@@ -189,7 +189,7 @@ Page {
                         Layout.alignment: Qt.AlignVCenter
 
                         action: Action {
-                            name: "Cambiar Diario"
+                            name: qsTr("Cambiar Diario")
                             iconName: "action/swap_horiz"
                             onTriggered: {
                                 switch_dialog.show();
@@ -200,7 +200,7 @@ Page {
                         Layout.alignment: Qt.AlignVCenter
 
                         action: Action {
-                            name: "Filtrar"
+                            name: qsTr("Filtrar")
                             iconName: "content/filter_list"
                         }
                     }
@@ -208,7 +208,7 @@ Page {
                         Layout.alignment: Qt.AlignVCenter
 
                         action: Action {
-                            name: "Sin Distracciones"
+                            name: qsTr("Sin Distracciones")
                             iconName: "action/launch"
                             onTriggered: root.startFullscreenMode()
                         }
@@ -217,9 +217,20 @@ Page {
                         Layout.alignment: Qt.AlignVCenter
 
                         action: Action {
-                            name: "Ajustes"
+                            name: qsTr("Ajustes")
                             iconName: "action/settings"
                         }
+                    }
+                    
+                    IconButton {
+                        Layout.alignment: Qt.AlignVCenter
+                        
+                        action: Action {
+                            name: qsTr("Manual")
+                            iconName: "awesome/heart"
+                        }
+                        
+                        color: "red"
                     }
                 }
             }
@@ -259,7 +270,7 @@ Page {
                 PropertyChanges {
                     target: msg;
                     visible: true;
-                    text: entries_list.model.count != 0 ? "Selecciona algun item de la lista a la izquierda o haz click en el boton morado de la derecha para comenzar a escribir" : "Aun no hay nada escrito, haz click en el boton morado de la derecha para comenzar a escribir"
+                    text: entries_list.model.count != 0 ? qsTr("Selecciona algun item de la lista a la izquierda o haz click en el boton morado de la derecha para comenzar a escribir") : qsTr("Aun no hay nada escrito, haz click en el boton morado de la derecha para comenzar a escribir")
                 }
                 PropertyChanges {
                     target: side;
@@ -347,7 +358,7 @@ Page {
                         text: page.current_entry.title;
                         subText: Qt.formatDateTime(
                             page.current_entry.date,
-                            "'Escrito el' dd 'de' MM 'a las' hh:mm"
+                            ("'" + qsTr("Escrito el") + "' dd '" + qsTr("de") + "' MM '" + qsTr("a las") + "' hh:mm")
                         );
                         selected: page.current_entry.starred
                     }
@@ -394,7 +405,7 @@ Page {
                         Layout.alignment: Qt.AlignLeft
                         Layout.fillWidth: true
                         
-                        placeholderText: "Titulo..."
+                        placeholderText: qsTr("Titulo")
                     }
 
                     IconButton {
@@ -402,7 +413,7 @@ Page {
                         Layout.alignment: Qt.AlignRight
 
                         action: Action {
-                            name: "Marcar"
+                            name: qsTr("Marcar")
                             iconName: "awesome/star"
                             onTriggered: {
                                 if (starred_action.color == Theme.accentColor){
@@ -423,7 +434,7 @@ Page {
                         Layout.alignment: Qt.AlignRight
 
                         action: Action {
-                            name: "Terminar"
+                            name: qsTr("Terminar")
                             iconName: "awesome/check"
 
                             onTriggered: {
@@ -528,7 +539,7 @@ Page {
                 Label {
                     anchors.fill: parent
                     anchors.margins: 40
-                    text: "Escribe aqui..."
+                    text: qsTr("Escribe aqui")
                     visible: !body_text.text
                     color: Theme.light.hintColor
                 }
