@@ -19,29 +19,79 @@ Journal::Journal(QString name, QString filename, QObject *parent)
     this->open();
 }
 
-Journal::~Journal() {}
+Journal::~Journal() {
+    while ( !this->entries.isEmpty() ) {
+        delete this->entries.takeFirst();
+    }
+    this->entries.clear();
+}
 
 int Journal::length() {
     return this->entries.count();
 }
 
-void Journal::new_entry(QString title, QString body, 
-                        QDateTime date, bool starred) 
+void Journal::new_entry(QString title, QString body,
+                        bool starred, QDateTime date) 
 {
     Entry *new_entry = new Entry(
         this, date, title, body, starred
     );
-    this->entries.append(new_entry);
-    this->sort();
+    this->entries.prepend(new_entry);
+    this->setTags(new_entry->getTags());
+
+    QObject::connect(
+        new_entry,
+        SIGNAL(tagsChanged(QStringList)),
+        this, 
+        SLOT(setTags(QStringList))
+    );
+}
+
+void Journal::new_entry(QString title, QString body, bool starred) {
+    Entry *new_entry = new Entry(
+        this, QDateTime::currentDateTime(), title, body, starred
+    );
+    this->entries.prepend(new_entry);
+    this->setTags(new_entry->getTags());
+
+    QObject::connect(
+        new_entry,
+        SIGNAL(tagsChanged(QStringList)),
+        this, 
+        SLOT(setTags(QStringList))
+    );
+}
+
+void Journal::update_entry(QString title, QString body,
+                           bool starred, int index) 
+{
+    QObject *entry = this->entries.at(index);
+
+    QMetaObject::invokeMethod(
+        entry, "setTitle", Q_ARG(QString, title)
+    );
+    QMetaObject::invokeMethod(
+        entry, "setBody", Q_ARG(QString, body)
+    );
+    QMetaObject::invokeMethod(
+        entry, "setStarred", Q_ARG(bool, starred)
+    );
+
+    entry = NULL;
+}
+
+void Journal::delete_entry(int index) {
+    this->entries.removeAt(index);
 }
 
 void Journal::sort() {
+    
     std::sort (
         this->entries.begin(),
         this->entries.end(),
         [&](QObject* entry_one, QObject* entry_two) -> bool {
             return entry_one->property("date").toDateTime() 
-                   < entry_two->property("date").toDateTime();
+                   > entry_two->property("date").toDateTime();
         }
     );
 }
@@ -102,9 +152,8 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
 }
 
 QVariantMap Journal::getEntries() {
-    qDebug() << this->length();
     QVariantMap entries;
-    int index = 1;
+    int index = 0;
     for ( QObject *entry : this->entries ) {
         QVariantMap n_entry;
         n_entry.insert("title", entry->property("title"));
@@ -116,6 +165,26 @@ QVariantMap Journal::getEntries() {
         index++;
     }
     return entries;
+}
+
+QVariantList Journal::getTags() {
+    QVariantList tags;
+    for ( QString &tag : this->tags ) {
+        tags << tag;
+    }
+    return tags;
+}
+
+void Journal::setTags(QStringList tags) {
+    for (QString &tag : tags ) {
+        if ( !this->tags.contains(tag) ) {
+            this->tags.append(tag);
+        }
+    }
+}
+
+QObject* Journal::getEntry(int index) {
+    return this->entries.at(index);
 }
 
 void Journal::save() { this->write(); }
@@ -158,7 +227,6 @@ void Journal::write() {
 
 void Journal::encrypt(QString journal) {
     QFile crypt_file(this->filename);
-    qDebug() << this->parent()->property("key").toByteArray();
     CryptFileDevice crypt_device(
         &crypt_file,
         this->parent()->property("key").toByteArray(),
@@ -173,6 +241,7 @@ void Journal::encrypt(QString journal) {
 
 QString Journal::decrypt() {
     QFile crypt_file(this->filename);
+
     CryptFileDevice crypt_device(
         &crypt_file,
         this->parent()->property("key").toByteArray(),
@@ -194,6 +263,7 @@ void Journal::open() {
     QMetaObject::invokeMethod(
         this->parent(), "getEncrypted", Q_RETURN_ARG(bool, encrypted)
     );
+
     if ( encrypted ) {
         this->parse(this->decrypt());
         return;
@@ -232,8 +302,10 @@ void Journal::parse(QString journal) {
             "{n}", "\n"
         );
         
-        this->new_entry(new_title, new_body, new_date, starred);
+        this->new_entry(new_title, new_body, starred, new_date);
     }
+
+    this->sort();
 
 }
 
@@ -271,13 +343,16 @@ QStringList Entry::parse_tags() {
     return tags;
 }
 
-QMap<QString, QVariant> Entry::to_map() {
-    return {
-        {"title", this->getTitle()},
-        {"body", this->getBody()},
-        {"date", this->getDate()},
-        {"starred", this->getStarred()}
-    };
+QVariantMap Entry::to_map() {
+    QVariantMap wrapper;
+    QVariantMap entry;
+    entry.insert("title", this->_title);
+    entry.insert("body", this->_body);
+    entry.insert("starred", this->_starred);
+    entry.insert("date", this->_date);
+    entry.insert("tags", this->tags);
+    wrapper.insert("0", entry);
+    return wrapper; 
 }
 
 QString Entry::to_html() { return ""; }

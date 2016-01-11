@@ -40,7 +40,7 @@ ApplicationWindow {
                 PropertyChanges {
                     target: next;
                     visible: true;
-                    text: qStr("Comenzar")
+                    text: qsTr("Comenzar")
                 }
                 PropertyChanges {
                     target: previous;

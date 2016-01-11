@@ -31,10 +31,49 @@ DiaryApplication::DiaryApplication(int &argc, char *argv[])
     this->app.installTranslator(&diary_translator);
 
     this->settings = new Settings();
+    this->active_journal = NULL;
 
 }
 
-DiaryApplication::~DiaryApplication() {}
+DiaryApplication::~DiaryApplication() {  
+    
+    if ( this->active_journal != NULL ) {
+        this->active_journal->save();
+        delete this->active_journal;
+        this->active_journal = NULL;
+    }
+
+    QQuickWindow *window;
+    window = this->root->findChild<QQuickWindow*>("main_window");
+
+    if ( window != 0 ) {
+
+        this->settings->setWindowWidth(
+            window->width()
+        );
+        this->settings->setWindowHeight(
+            window->height()
+        );
+        this->settings->setWindowX(
+            window->x()
+        );
+        this->settings->setWindowY(
+            window->y()
+        );
+    }
+
+    delete window; window = NULL;
+
+    if ( this->settings != NULL ) {
+        delete this->settings; this->settings = NULL;
+    }
+    if ( this->root != NULL ) {
+        delete this->root; this->root = NULL;
+    }
+    if ( this->app_engine != NULL ) {
+        delete this->app_engine; this->app_engine = NULL;
+    }
+}
 
 
 int DiaryApplication::run() {
@@ -84,7 +123,19 @@ void DiaryApplication::setRootAndLoad(QObject *root) {
         this,
         SLOT(loadDiary())
     );
-
+    QObject::connect(
+        this->root,
+        SIGNAL(createdComplete()),
+        this,
+        SLOT(sendEntry())
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(requiredTags()),
+        this,
+        SLOT(sendTags())
+    );
+    
     this->loadDiary();
 
 }
@@ -94,6 +145,34 @@ void DiaryApplication::prepareDiary(QString journal, QString key) {
     this->settings->setKey(this->make_key(key));
     this->settings->setConfigured(true);
     this->root->findChild<QQuickWindow*>("welcome")->setProperty("is_configured", true);
+}
+
+void DiaryApplication::sendEntry() {
+    if ( this->active_journal->length() ==
+         this->root->property("entries_count").toInt()
+       )
+    {
+        return;
+    }
+    else {
+        QVariantMap entry;
+        QMetaObject::invokeMethod(
+            this->active_journal->getEntry(0),
+            "to_map",
+            Q_RETURN_ARG(QVariantMap, entry)
+        );
+        this->root->setProperty(
+            "activeJournalEntries",
+            entry
+        );
+    }
+}
+
+void DiaryApplication::sendTags() {
+    this->root->setProperty(
+        "activeJournalTags",
+        this->active_journal->getTags()
+    );
 }
 
 void DiaryApplication::loadDiary() {
@@ -106,6 +185,13 @@ void DiaryApplication::loadDiary() {
             "load",
             Q_ARG(QVariant, QVariant::fromValue(false))
         );
+        
+        QQuickWindow *window;
+        window = this->root->findChild<QQuickWindow*>("main_window");
+        window->setProperty("width", this->settings->getWindowWidth());
+        window->setProperty("height", this->settings->getWindowHeight());
+        window->setProperty("x", this->settings->getWindowX());
+        window->setProperty("y", this->settings->getWindowY());
     }
     else {
         QMetaObject::invokeMethod(
@@ -155,14 +241,41 @@ void DiaryApplication::loadJournal(QString name) {
             break;
         }
     }
+
+    if ( this->active_journal != NULL ) {
+        this->active_journal->save();
+        this->root->disconnect(this->active_journal);
+        delete this->active_journal;
+        this->active_journal = NULL;
+    }
+
     this->active_journal = new Journal(
         name.toLower(),
         filename,
         this
     );
 
+    QObject::connect(
+        this->root,
+        SIGNAL(createdEntry(QString, QString, bool)),
+        this->active_journal,
+        SLOT(new_entry(QString, QString, bool))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(updatedEntry(QString, QString, bool, int)),
+        this->active_journal,
+        SLOT(update_entry(QString, QString, bool, int))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(deletedEntry(int)),
+        this->active_journal,
+        SLOT(delete_entry(int))
+    );
+
     this->root->setProperty(
-        "active_journal_entries",
+        "activeJournalEntries",
         this->active_journal->getEntries()
     );
 
@@ -177,6 +290,7 @@ void DiaryApplication::loadJournal(QString name) {
         "displayJournal",
         Q_ARG(QVariant, QVariant::fromValue(name))
     );
+
 }
 
 QVariantMap DiaryApplication::list_journals() {

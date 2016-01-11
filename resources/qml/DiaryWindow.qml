@@ -5,15 +5,15 @@ import Material 0.1
 ApplicationWindow {
     id: root
     objectName: "main_window"
-
-// {{{ Properties
     
     property QtObject app
 
     title: "Diary"
     visible: true
-    minimumWidth: Units.dp(950)
-    minimumHeight: Units.dp(400)
+    minimumWidth: 700
+    minimumHeight: 400
+    width: 950
+    height: 500
 
     property bool fullscreen: false
     property string current_journal
@@ -26,10 +26,6 @@ ApplicationWindow {
         backgroundColor: Palette.colors["white"]["500"]
     }
 
-// Properties }}}
-
-// {{{ Functions
-
     function startFullscreenMode() {
         fullscreen = true;
         showFullScreen();
@@ -41,7 +37,9 @@ ApplicationWindow {
     }
 
     function displayJournal(name) {
-        main_page.entries = root.app.journal_entries_model;
+        if ( !main_page.entries ) {
+            main_page.entries = root.app.journal_entries_model;
+        }
         main_page.journal_name = name;
         main_page.state = "journal";
     }
@@ -55,10 +53,6 @@ ApplicationWindow {
         key_dialog.state = "warning";
     }
 
-// Functions }}}
-
-// {{{ Components
-
     initialPage: MainPage { id: main_page }
 
     SwitchDialog { 
@@ -69,9 +63,11 @@ ApplicationWindow {
         onSwitched: {
             root.current_journal = journal_name;
             if ( switch_dialog.state != "switch" ) {
-                switch_dialog.state == "switch";
+                switch_dialog.state = "switch";
             }
-            root.app.selectedJournal(root.current_journal);       
+            root.app.switchJournal = true;
+            main_page.state = "no_journal";
+            root.app.selectedJournal(root.current_journal);
         }
     }
 
@@ -81,6 +77,11 @@ ApplicationWindow {
         onTried: {
             root.app.validatedKey(key);
         }
+    }
+
+    FilterDialog {
+        id: filter_dialog
+        tags: root.app.activeJournalTags
     }
 
     Timer {
@@ -93,8 +94,6 @@ ApplicationWindow {
            key_dialog.show(); 
         }
     }
-
-// Components }}}
 
     onClosing: {
         console.log("Close...");

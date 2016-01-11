@@ -46,6 +46,7 @@ OTHER_FILES += resources/qml/BaseApplication.qml \
 	       resources/qml/MainPage.qml \
                resources/qml/KeyDialog.qml \
                resources/qml/SwitchDialog.qml \
+               resources/qml/FilterDialog.qml \
 	       resources/qml/Diary.qml \
 	       resources/images/logo.png \
 	       translations/en_EN.ts

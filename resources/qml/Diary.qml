@@ -19,6 +19,11 @@ BaseApplication {
     signal selectedJournal(string name)
     signal createdJournal(string name)
     signal validatedKey(string key)
+    signal createdEntry(string title, string body, bool starred)
+    signal updatedEntry(string title, string body, bool starred, int index)
+    signal createdComplete()
+    signal deletedEntry(int index)
+    signal requiredTags()
 
     function createWindow(window) {
         var new_window = window.createObject(diary);

@@ -14,12 +14,20 @@ Page {
     property string journal_name
 
     property QtObject current_entry: QtObject {
-        property int index
+        property var index
         property string title
         property var date
         property string body
         property bool starred
         property var tags
+
+        function reset() {
+            current_entry.index = null;
+            current_entry.title = "";
+            current_entry.date = null;
+            current_entry.body = "";
+            current_entry.tags = null;
+        }
     }
 
     property alias content: content
@@ -72,6 +80,21 @@ Page {
             height: parent.height - toolbar.height
             width: parent.width
 
+            add: Transition {
+                NumberAnimation {
+                    property: "opacity";
+                    to: 1; 
+                    duration: 2000
+                }
+            }
+
+            displaced: Transition {
+                NumberAnimation {
+                    properties: "x,y";
+                    duration: 1000
+                }
+            }
+
             header : Lists.Standard {
 
                 showDivider: true
@@ -95,6 +118,17 @@ Page {
                         action: Action {
                             name: qsTr("Nueva Entrada")
                             iconName: "awesome/plus"
+
+                            onTriggered: {
+                                page.content.state = "writing";
+                                page.header.state = "new";
+                                page.body.state = "new";
+                                page.content.new_entry = true;
+                                page.content.sync = false;
+                                page.content.saved = false;
+
+                                page.current_entry.reset();
+                            }
                         }
                     }
                 }
@@ -109,7 +143,7 @@ Page {
                 showDivider: true
 
                 onClicked: {
-                    page.current_entry.index = model.index;
+                    page.current_entry.index = index;
                     page.current_entry.title = model.title;
                     page.current_entry.body = model.body;
                     page.current_entry.date = model.date;
@@ -121,6 +155,8 @@ Page {
                     }    
                     page.header.state = "read";
                     page.body.state = "read";
+
+                    console.log(page.current_entry.tags);
                 }
 
                 MouseArea {
@@ -202,6 +238,19 @@ Page {
                         action: Action {
                             name: qsTr("Filtrar")
                             iconName: "content/filter_list"
+
+                            onTriggered: {
+                                if ( entries_list.count == 0 ) {
+                                    snackbar.open(qsTr("Debes tener entradas para poder filtrarlas"));
+                                    return;
+                                }
+                                else {
+                                    if ( !root.app.activeJournalTags ) {
+                                        root.app.requiredTags();
+                                    }
+                                    filter_dialog.show();
+                                }
+                            }
                         }
                     }
                     IconButton {
@@ -248,6 +297,10 @@ Page {
 
     View {
         id: content
+
+        property bool saved: false
+        property bool new_entry: false
+        property bool sync: false
 
         state: "stand"
 
@@ -348,7 +401,7 @@ Page {
                     PropertyChanges {
                         target: header_text;
                         text: page.current_entry.title;
-                        selected: current_entry.starred;
+                        selected: page.current_entry.starred
                     }
                 },
                 State {
@@ -362,6 +415,10 @@ Page {
                         );
                         selected: page.current_entry.starred
                     }
+                },
+                State {
+                    name: "stand"
+                    extend: "new"
                 }
             ]
 
@@ -377,10 +434,18 @@ Page {
                 iconName: "awesome/star"
                 
                 visible: content.state == "reading"
+                selected: page.current_entry.starred
 
                 onClicked: {
-                    selected = !selected;
-                    page.current_entry.starred = selected;
+                    page.current_entry.starred = !selected;
+                    root.app.updatedEntry(
+                        page.current_entry.title,
+                        page.current_entry.body,
+                        page.current_entry.starred,
+                        page.current_entry.index
+                    );
+
+                    root.app.journal_entries_model.update(page.current_entry);
                 }
             }
 
@@ -406,6 +471,12 @@ Page {
                         Layout.fillWidth: true
                         
                         placeholderText: qsTr("Titulo")
+
+                        onTextChanged: {
+                            page.current_entry.title = text;
+                            content.saved = false;
+                        }
+
                     }
 
                     IconButton {
@@ -417,19 +488,23 @@ Page {
                             iconName: "awesome/star"
                             onTriggered: {
                                 if (starred_action.color == Theme.accentColor){
-                                    starred_action.color = Theme.light.iconColor;
+                                    // starred_action.color = Theme.light.iconColor;
+                                    page.current_entry.starred = false;
+                                    content.saved = false;
                                 }
                                 else {
-                                    starred_action.color = Theme.accentColor
+                                    // starred_action.color = Theme.accentColor
+                                    page.current_entry.starred = true;
+                                    content.saved = false;
                                 }
                             }
                         }
 
-                        color: Theme.light.iconColor
+                        color: page.current_entry.starred ? Theme.accentColor : Theme.light.iconColor
                     }
 
                     IconButton {
-                        id: back_action
+                        id: finish_action
 
                         Layout.alignment: Qt.AlignRight
 
@@ -438,7 +513,47 @@ Page {
                             iconName: "awesome/check"
 
                             onTriggered: {
-                                page.content.state = "stand";
+                                if ( page.content.saved ) {
+                                    if ( !page.current_entry.title ) {
+                                        msg_confirm.state = "not_title";
+                                        msg_confirm.show();
+                                        return;
+                                    }
+                                    page.content.state = "stand";
+                                    page.body.state = "stand";
+                                    page.header.state = "stand";
+                                    if ( !page.content.sync ) {
+                                        root.app.createdComplete();
+                                        snackbar.open("Nueva entrada creada");
+                                        return;
+                                    }
+                                    page.current_entry.reset()
+                                    snackbar.open("Cambios guardados");
+                                    return;
+                                }
+                                else {
+                                    if ( !page.current_entry.title &&
+                                         !page.current_entry.body &&
+                                         page.content.new_entry
+                                       )
+                                    {
+                                        page.content.state = "stand";
+                                        page.body.state = "stand";
+                                        page.header.state = "stand";
+                                        page.current_entry.reset();
+                                        snackbar.open("Sin cambios");
+                                        return;
+                                    }
+                                    else if ( !page.current_entry.title ) {
+                                        msg_confirm.state = "not_title";
+                                        msg_confirm.show();
+                                        return;
+                                    }
+
+                                    msg_confirm.state = "not_save";
+                                    msg_confirm.show();
+                                    return
+                                }
                             }
                         }
                     }
@@ -470,6 +585,10 @@ Page {
                         target: body_label;
                         text: page.current_entry.body
                     }
+                },
+                State {
+                    name: "stand"
+                    extend: "new"
                 }
             ]
 
@@ -543,6 +662,11 @@ Page {
                     visible: !body_text.text
                     color: Theme.light.hintColor
                 }
+
+                onTextChanged: {
+                    page.current_entry.body = text;
+                    content.saved = false;
+                }
             }
         }
 
@@ -585,16 +709,200 @@ Page {
                     page.header.state = "edit"
                     page.body.state = "edit"
                     page.content.state = "writing";
+                    page.content.new_entry = false;
+                    page.content.sync = true;
+                    page.content.saved = true;
                 }
                 else if ( page.content.state == "stand" ) {
                     page.content.state = "writing";
                     page.header.state = "new";
                     page.body.state = "new";
-                    //page.content.state = "writing";
+                    page.content.new_entry = true;
+                    page.content.sync = false;
+                    page.content.saved = false;
                 }
                 else if ( page.content.state == "writing" ) {
-                    console.log("SAVED");
+                    if ( page.content.saved ) { 
+                        snackbar.open(qsTr("No hay cambios"))
+                        return;
+                    }
+                    else {
+                        if ( 
+                            !page.current_entry.title &&
+                            !page.current_entry.body 
+                           )
+                        {
+                            snackbar.open(qsTr("Debes escribir algo que guardar"))
+                            return;
+                        }
+                        if ( page.content.new_entry ) {
+                            root.app.createdEntry(
+                                page.current_entry.title,
+                                page.current_entry.body,
+                                page.current_entry.starred
+                            );
+                            page.content.saved = true;
+                            page.content.new_entry = false;
+                        }
+                        else {
+                            root.app.updatedEntry(
+                                page.current_entry.title,
+                                page.current_entry.body,
+                                page.current_entry.starred,
+                                page.current_entry.index ? page.current_entry.index : 0
+                            );
+
+
+                            if ( page.content.sync ) {
+                                root.app.journal_entries_model.update(
+                                    page.current_entry
+                                );
+                            }
+
+                            page.content.saved = true;
+                        }
+
+                        snackbar.open(qsTr("Guardado"));
+                    }
                 }
+            }
+        }
+    }
+
+    Snackbar {
+        id: snackbar
+    }
+
+    Dialog {
+        id: msg_confirm
+
+        states: [
+            State {
+                name: "not_title"
+                PropertyChanges {
+                    target: msg_confirm;
+                    title: qsTr("Nueva Entrada");
+                    text: qsTr("Tu entrada no tiene un titulo, Diary usara la fecha actual de tu entrada como titulo, si no escribes uno por tu cuenta.");
+                    positiveButtonText: qsTr("Escribir titulo");
+                    negativeButtonText: qsTr("Aceptar")
+                }
+            },
+            State {
+                name: "not_save"
+                PropertyChanges {
+                    target: msg_confirm;
+                    title: qsTr("Entrada sin Guardar");
+                    text: qsTr("hay cambios realizados que no han sido guardados");
+                    positiveButtonText: qsTr("Guardar y salir");
+                    negativeButtonText: qsTr("Salir sin guardar")
+                }
+            }
+        ]
+
+        onAccepted: {
+            if ( state == "not_title" ) {
+                close();
+                title_edit.forceActiveFocus();
+                return;
+            }
+            else if ( state == "not_save" ) {
+                close();
+                if ( page.content.new_entry ) {
+                    root.app.createdEntry(
+                        page.current_entry.title,
+                        page.current_entry.body,
+                        page.current_entry.starred
+                    );
+
+                    page.current_entry.reset();
+                }
+                else {
+                    root.app.updatedEntry(
+                        page.current_entry.title,
+                        page.current_entry.body,
+                        page.current_entry.starred,
+                        page.current_entry.index ? page.current_entry.index : 0
+                    );
+                    
+                    if ( page.content.sync ) {
+                        root.app.journal_entries_model.update(
+                            page.current_entry
+                        );
+                    }
+
+                    page.current_entry.reset();
+                }
+
+                page.content.state = "stand";
+                page.body.state = "stand";
+                page.header.state = "stand";
+
+                if ( !page.content.sync ) {
+                    root.app.createdComplete();
+                    snackbar.open(qsTr("Nueva entrada creada"));
+                    return;
+                }
+
+                snackbar.open(qsTr("Cambios guardados"));
+            }
+        }
+
+        onRejected: {
+            if ( state == "not_title" ) {
+                close();
+                if ( page.content.new_entry ) {
+                    root.app.createdEntry(
+                        Qt.formatDateTime(
+                            new Date(),
+                            ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
+                        ),
+                        page.current_entry.body,
+                        page.current_entry.starred
+                    );
+
+                    page.current_entry.reset();
+                }
+                else {
+                    root.app.updatedEntry(
+                        Qt.formatDateTime(
+                            (page.current_entry.date ? page.current_entry.date : new Date()),
+                            ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
+                        ),
+                        page.current_entry.body,
+                        page.current_entry.starred,
+                        page.current_entry.index ? page.current_entry.index : 0
+                    );
+
+                    if ( page.content.sync ) {
+                        root.app.journal_entries_model.update(
+                            page.current_entry
+                        );
+                    }
+
+                    page.current_entry.reset();
+                }
+                page.content.state = "stand";
+                page.body.state = "stand";
+                page.header.state = "stand";
+
+                if ( !page.content.sync ) {
+                    root.app.createdComplete();
+                    snackbar.open(qsTr("Nueva entrada creada"));
+                    return;
+                }
+
+                snackbar.open(qsTr("Cambios guardados"));
+            }
+            else if ( state == "not_save" ) {
+                close();
+                page.content.state = "stand";
+                page.body.state = "stand";
+                page.header.state = "stand";
+                if ( !page.content.sync ) {
+                    root.app.deletedEntry(0);
+                }
+                page.current_entry.reset();
+                snackbar.open(qsTr("Entrada descartada"));
             }
         }
     }

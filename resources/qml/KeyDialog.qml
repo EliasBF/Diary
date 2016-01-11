@@ -41,6 +41,7 @@ Dialog {
     minimumWidth: parent.width * 0.4
     title: "Diary"
     text: qsTr("Ingresa tu frase secreta para acceder")
+    dismissOnTap: false
 
     TextField {
         id: key_text

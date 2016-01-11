@@ -66,31 +66,8 @@
         ~Entry();
 
         static QRegularExpression tag_regex(QString tagsymbol);
-        QMap<QString, QVariant> to_map();
         QString to_html();
         bool equal(Entry &other);
-
-        inline QString getTitle() { return this->_title; };
-        inline void setTitle(QString title) {
-            this->_title = title;
-            emit titleChanged(this->_title);
-        };
-        inline QString getBody() { return this->_body; };
-        inline void setBody(QString body) {
-            this->_body = body;
-            emit bodyChanged(this->_body);
-        };
-        inline QDateTime getDate() { return this->_date; };
-        inline void setDate(QDateTime date) {
-            this->_date = date;
-            emit dateChanged(this->_date);
-        };
-        inline bool getStarred() { return this->_starred; };
-        inline void setStarred(bool starred) {
-            this->_starred = starred;
-            emit starredChanged(this->_starred);
-        };
-        inline QStringList getTags() { return this->tags; };
 
     private:
 
@@ -108,9 +85,39 @@
         void titleChanged(QString title);
         void bodyChanged(QString body);
         void starredChanged(bool starred);
+        void tagsChanged(QStringList tags);
 
     public slots:
         QString unicode();
+        QVariantMap to_map();
+
+        inline QString getTitle() { return this->_title; };
+        inline void setTitle(QString title) {
+            this->_title = title;
+            this->setTags();
+            emit titleChanged(this->_title);
+        };
+        inline QString getBody() { return this->_body; };
+        inline void setBody(QString body) {
+            this->_body = body;
+            this->setTags();
+            emit bodyChanged(this->_body);
+        };
+        inline QDateTime getDate() { return this->_date; };
+        inline void setDate(QDateTime date) {
+            this->_date = date;
+            emit dateChanged(this->_date);
+        };
+        inline bool getStarred() { return this->_starred; };
+        inline void setStarred(bool starred) {
+            this->_starred = starred;
+            emit starredChanged(this->_starred);
+        };
+        inline QStringList getTags() { return this->tags; };
+        inline void setTags() {
+            this->tags = this->parse_tags();
+            emit tagsChanged(this->tags);
+        }
 
     };
 
@@ -136,12 +143,6 @@
         ~Journal();
 
         int length();
-        void new_entry(
-            QString title,
-            QString body,
-            QDateTime date,
-            bool starred
-        );
         void sort();
         QList<QObject*> filter(
             QStringList tags,
@@ -158,6 +159,13 @@
             emit nameChanged(this->_name);
         };
         QVariantMap getEntries();
+        QObject* getEntry(int index);
+        void new_entry(
+            QString title,
+            QString body,
+            bool starred,
+            QDateTime date
+        );
 
     private:
         
@@ -172,7 +180,26 @@
         void write();
         void parse(QString journal);
 
+    public slots:
+        
+        void new_entry(
+            QString title,
+            QString body,
+            bool starred
+        );
+        void update_entry(
+            QString title,
+            QString body,
+            bool starred,
+            int index
+        );
+        void delete_entry(int index);
+
+        QVariantList getTags();
+        void setTags(QStringList tags);
+
     signals:
+
         void nameChanged(QString name);
 
     };

@@ -35,6 +35,8 @@
         void loadJournal(QString name);
         void new_journal(QString name);
         void authenticated(QString key);
+        void sendEntry();
+        void sendTags();
 
     private:
 

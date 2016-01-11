@@ -5,15 +5,12 @@ Item {
     id: application
     objectName: "application"
 
-// {{{ Properties
-
     property bool enableShortCuts: false
+    property int entries_count: journal_entries_model.count
+    property bool switchJournal: false
     property var journals: {}
-    property var active_journal_entries: {}
-
-// Properties }}}
-
-// {{{ Properties bindings
+    property var activeJournalEntries: {}
+    property var activeJournalTags: []
 
     onJournalsChanged: {
         if ( journals ) {
@@ -31,9 +28,40 @@ Item {
         }
     }
 
-// Properties bindings }}}
+    onActiveJournalEntriesChanged: {
+        if ( activeJournalEntries ) {
+            if ( application.switchJournal ) { 
+                journal_entries_model.clear(); 
+                if ( activeJournalTags ) { activeJournalTags = null; }
+            }
+            if ( journal_entries_model.count == 0 ) {
+                for ( var entry in application.activeJournalEntries ) {
+        
+                    journal_entries_model.append({
+                        "title": application.activeJournalEntries[entry].title,
+                        "body": application.activeJournalEntries[entry].body,
+                        "starred": application.activeJournalEntries[entry].starred,
+                        "date": application.activeJournalEntries[entry].date,
+                        "tags": application.activeJournalEntries[entry].tags
+                    });
+                }
+            }
+            else {
+                for ( var entry in application.activeJournalEntries ) {
 
-// {{{ Models
+                    journal_entries_model.insert(0, {
+                        "title": application.activeJournalEntries[entry].title,
+                        "body": application.activeJournalEntries[entry].body,
+                        "starred": application.activeJournalEntries[entry].starred,
+                        "date": application.activeJournalEntries[entry].date,
+                        "tags": application.activeJournalEntries[entry].tags
+                    });
+                }
+            }
+
+            application.activeJournalEntries = null;
+        }
+    }
 
     property ListModel journal_model: ListModel {
         id: journal_model
@@ -43,28 +71,38 @@ Item {
     }
 
     property ListModel journal_entries_model: ListModel {
-        id: current_entries_model
+        id: journal_entries_model
         dynamicRoles: true
+
+        function update(entry) {
+
+            journal_entries_model.setProperty(
+                entry.index, "title",
+                (entry.title ? entry.title : Qt.formatDateTime(
+                    (entry.date ? entry.date : new Date()),
+                    ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
+                ))
+            );
+            journal_entries_model.setProperty(
+                entry.index, "body", entry.body
+            );
+            journal_entries_model.setProperty(
+                entry.index, "starred", entry.starred
+            );
+
+            return;
+        }
+
+        function _delete(entry_index) {
+            journal_entries_model.remove(entry_index);
+            return;
+        }
     }
-
-// Models }}}
-
-// {{{ Functions
 
     function startDiary() {
 
-        if ( journal_model.count != 0 ) {
+        if ( application.journals ) {
             application.journals = null;
-        }
-        else {
-        
-            for ( var journal in application.journals ) {
-                journal_model.append({
-                    "name": journal,
-                    "filename": application.journals[journal],
-                    "current": false
-                });
-            }
         }
 
     }
@@ -72,20 +110,9 @@ Item {
     function activate_journal(name) {
         console.log("Activate journal: " + name);
         
-        for ( var entry in application.active_journal_entries ) {
-
-            journal_entries_model.append({
-                "index": entry,
-                "title": application.active_journal_entries[entry].title,
-                "body": application.active_journal_entries[entry].body,
-                "starred": application.active_journal_entries[entry].starred,
-                "date": application.active_journal_entries[entry].date,
-                "tags": application.active_journal_entries[entry].tags
-            });
-
+        if ( application.activeJournalEntries ) {
+            application.activeJournalEntries = null;
         }
-
-        application.active_journal_entries = null;
 
         if ( journal_model.current_index != -1 ) {
 
@@ -104,11 +131,11 @@ Item {
                 break;
             }
         }
+        
+        if ( application.switchJournal ) { application.switchJournal = false; }
 
         console.log("Journal: " + name + "... is active");
     }
-
-// Functions }}}
 
     Component.onCompleted: {
         // ...
