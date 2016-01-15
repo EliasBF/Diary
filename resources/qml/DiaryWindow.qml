@@ -82,6 +82,24 @@ ApplicationWindow {
     FilterDialog {
         id: filter_dialog
         tags: root.app.activeJournalTags
+
+        onFilter: {
+            var string_tags = "";
+            if ( tags && tags.length > 0 ) {
+                tags.forEach(function(tag) {
+                    string_tags += tag + "/";
+                });
+                string_tags = string_tags.slice(0, string_tags.length - 1);
+            }
+            root.app.filterEntries = true;
+            main_page.list_filtered = true;
+            root.app.filtered(
+                starred, 
+                string_tags,
+                date_start ? date_start : new Date(1,1,1),
+                date_end ? date_end : new Date(25,10,275759)
+            );
+        }
     }
 
     Timer {

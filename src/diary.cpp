@@ -81,6 +81,13 @@ void Journal::update_entry(QString title, QString body,
 }
 
 void Journal::delete_entry(int index) {
+    QStringList tags;
+    QMetaObject::invokeMethod(
+        this->getEntry(index),
+        "getTags",
+        Q_RETURN_ARG(QStringList, tags)
+    );
+    this->removeTags(tags);
     this->entries.removeAt(index);
 }
 
@@ -108,7 +115,7 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
         this->entries.end(),
         [&](QObject *entry) {
             if ( strict ) {
-                if (( !tags.isEmpty() &&
+                if (( tags.isEmpty() ||
                      std::all_of(
                         tags.begin(),
                         tags.end(),
@@ -117,17 +124,15 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
                         }
                      )
                    )
-                   && ( !starred || entry->property("starred").toBool() )
-                   && ( start_date.isNull() 
-                        || entry->property("date").toDateTime() >= start_date )
-                   && ( end_date.isNull() 
-                        || entry->property("date").toDateTime() <= end_date ))
+                   && ( starred  == entry->property("starred").toBool() )
+                   && ( entry->property("date").toDateTime() >= start_date )
+                   && ( entry->property("date").toDateTime() <= end_date ))
                 {
                     filter_list.append(entry);
                 }
             }
             else {
-                if (( !tags.isEmpty() &&
+                if (( tags.isEmpty() ||
                      std::any_of(
                         tags.begin(),
                         tags.end(),
@@ -136,11 +141,9 @@ QList<QObject*> Journal::filter(QStringList tags, QDateTime start_date,
                         }
                      )
                    )
-                   && ( !starred || entry->property("starred").toBool() )
-                   && ( start_date.isNull() 
-                        || entry->property("date").toDateTime() >= start_date )
-                   && ( end_date.isNull() 
-                        || entry->property("date").toDateTime() <= end_date ))
+                   && ( starred == entry->property("starred").toBool() )
+                   && ( entry->property("date").toDateTime() >= start_date )
+                   && ( entry->property("date").toDateTime() <= end_date ))
                 {
                     filter_list.append(entry);
                 }
@@ -179,6 +182,14 @@ void Journal::setTags(QStringList tags) {
     for (QString &tag : tags ) {
         if ( !this->tags.contains(tag) ) {
             this->tags.append(tag);
+        }
+    }
+}
+
+void Journal::removeTags(QStringList tags) {
+    for ( auto tag : tags ) {
+        if ( this->tags.contains(tag) ) {
+            this->tags.removeOne(tag);
         }
     }
 }
@@ -344,28 +355,16 @@ QStringList Entry::parse_tags() {
 }
 
 QVariantMap Entry::to_map() {
-    QVariantMap wrapper;
     QVariantMap entry;
     entry.insert("title", this->_title);
     entry.insert("body", this->_body);
     entry.insert("starred", this->_starred);
     entry.insert("date", this->_date);
     entry.insert("tags", this->tags);
-    wrapper.insert("0", entry);
-    return wrapper; 
+    return entry; 
 }
 
 QString Entry::to_html() { return ""; }
-
-bool Entry::equal(Entry &other) {
-    if (( this->getDate() != other.getDate())
-    || ( this->getTitle() != other.getTitle() )
-    || ( this->getBody() != other.getBody() ))
-    {
-        return false;
-    }
-    else { return true; }
-}
 
 QString Entry::unicode() {
     QString date_str = this->getDate().toString("dd/MM/yyyy HH:mm").replace(" ", "{s}");

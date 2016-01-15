@@ -135,6 +135,18 @@ void DiaryApplication::setRootAndLoad(QObject *root) {
         this,
         SLOT(sendTags())
     );
+    QObject::connect(
+        this->root,
+        SIGNAL(filtered(bool, QString, QDateTime, QDateTime)),
+        this,
+        SLOT(sendFilteredEntries(bool, QString, QDateTime, QDateTime))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(restoredEntries()),
+        this,
+        SLOT(sendEntries())
+    );
     
     this->loadDiary();
 
@@ -155,15 +167,17 @@ void DiaryApplication::sendEntry() {
         return;
     }
     else {
+        QVariantMap wrapper_entry;
         QVariantMap entry;
         QMetaObject::invokeMethod(
             this->active_journal->getEntry(0),
             "to_map",
             Q_RETURN_ARG(QVariantMap, entry)
         );
+        wrapper_entry.insert("0", entry);
         this->root->setProperty(
             "activeJournalEntries",
-            entry
+            wrapper_entry
         );
     }
 }
@@ -172,6 +186,44 @@ void DiaryApplication::sendTags() {
     this->root->setProperty(
         "activeJournalTags",
         this->active_journal->getTags()
+    );
+}
+
+void DiaryApplication::sendEntries() {
+    this->root->setProperty(
+        "activeJournalEntries",
+        this->active_journal->getEntries()
+    );
+}
+
+void DiaryApplication::sendFilteredEntries(
+    bool starred, QString tags, QDateTime date_start, QDateTime date_end
+)
+{
+    QStringList tags_list;
+    if ( tags.count() > 0 ) {
+        tags_list = tags.split("/");
+    }
+
+    auto filter_list = this->active_journal->filter(
+        tags_list, date_start, date_end, starred, false
+    );
+    
+    QVariantMap entries;
+    int index = 0;
+
+    for ( auto entry : filter_list ) {
+        QVariantMap n_entry;
+        QMetaObject::invokeMethod(
+            entry, "to_map", Q_RETURN_ARG(QVariantMap, n_entry)
+        );
+        entries.insert(QString::number(index), n_entry);
+        index++;
+    }
+
+    this->root->setProperty(
+        "activeJournalEntries",
+        entries
     );
 }
 

@@ -24,6 +24,11 @@ BaseApplication {
     signal createdComplete()
     signal deletedEntry(int index)
     signal requiredTags()
+    signal filtered(
+        bool starred, string tags,
+        date date_start, date date_end
+    )
+    signal restoredEntries()
 
     function createWindow(window) {
         var new_window = window.createObject(diary);

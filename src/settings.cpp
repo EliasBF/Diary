@@ -27,7 +27,7 @@ Settings::Settings()
         this->setValue("data/journals", QStringList());
 
         // General
-        this->setValue("General/encrypted", true);
+        this->setValue("General/encrypted", false);
         this->setValue("General/path", this->fileName().remove("diary.conf"));
         this->setValue("General/configured", false);
 

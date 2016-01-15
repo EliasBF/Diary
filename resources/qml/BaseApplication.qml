@@ -8,6 +8,7 @@ Item {
     property bool enableShortCuts: false
     property int entries_count: journal_entries_model.count
     property bool switchJournal: false
+    property bool filterEntries: false
     property var journals: {}
     property var activeJournalEntries: {}
     property var activeJournalTags: []
@@ -30,9 +31,12 @@ Item {
 
     onActiveJournalEntriesChanged: {
         if ( activeJournalEntries ) {
-            if ( application.switchJournal ) { 
-                journal_entries_model.clear(); 
+            if ( application.switchJournal || application.filterEntries ) { 
+                journal_entries_model.clear();
                 if ( activeJournalTags ) { activeJournalTags = null; }
+                if ( application.filterEntries ) {
+                    application.filterEntries = false;
+                }
             }
             if ( journal_entries_model.count == 0 ) {
                 for ( var entry in application.activeJournalEntries ) {

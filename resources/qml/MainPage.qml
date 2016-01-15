@@ -12,6 +12,7 @@ Page {
 
     property alias entries: entries_list.model
     property string journal_name
+    property bool list_filtered: false
 
     property QtObject current_entry: QtObject {
         property var index
@@ -114,6 +115,23 @@ Page {
 
                     IconButton {
                         Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+
+                        visible: page.list_filtered
+
+                        action: Action {
+                            name: qsTr("Deshacer Filtrado")
+                            iconName: "awesome/refresh"
+
+                            onTriggered: {
+                                root.app.filterEntries = true;
+                                root.app.restoredEntries();
+                                page.list_filtered = false;
+                            }
+                        }
+                    }
+
+                    IconButton {
+                        Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                         
                         action: Action {
                             name: qsTr("Nueva Entrada")
@@ -198,7 +216,9 @@ Page {
                             text: qsTr("Eliminar")
                             iconName: "awesome/trash"
                             onClicked: {
-                                entry_menu.close()
+                                entry_menu.close();
+                                root.app.deletedEntry(index);
+                                root.app.journal_entries_model._delete(index);
                             }
                         }
                     }

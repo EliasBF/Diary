@@ -67,7 +67,6 @@
 
         static QRegularExpression tag_regex(QString tagsymbol);
         QString to_html();
-        bool equal(Entry &other);
 
     private:
 
@@ -197,6 +196,7 @@
 
         QVariantList getTags();
         void setTags(QStringList tags);
+        void removeTags(QStringList tags);
 
     signals:
 
