@@ -399,7 +399,8 @@ Dialog {
             dialog.starred,
             dialog._tags,
             dialog.date_start,
-            dialog.date_end
+            dialog.date_end,
+            dialog.strict
         );
     }
 

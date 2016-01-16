@@ -192,7 +192,13 @@
             bool starred,
             int index
         );
+        void update_entry(
+            QString title,
+            QString body,
+            bool starred
+        );
         void delete_entry(int index);
+        void delete_entry(QString title);
 
         QVariantList getTags();
         void setTags(QStringList tags);

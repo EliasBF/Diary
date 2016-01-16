@@ -39,7 +39,8 @@
         void sendTags();
         void sendFilteredEntries(
             bool starred, QString tags,
-            QDateTime date_start, QDateTime date_end
+            QDateTime date_start, QDateTime date_end,
+            bool strict
         );
         void sendEntries();
 

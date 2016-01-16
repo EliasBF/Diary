@@ -21,12 +21,15 @@ BaseApplication {
     signal validatedKey(string key)
     signal createdEntry(string title, string body, bool starred)
     signal updatedEntry(string title, string body, bool starred, int index)
+    signal updatedInFilter(string title, string body, bool starred)
     signal createdComplete()
     signal deletedEntry(int index)
+    signal deletedInFilter(string title)
     signal requiredTags()
     signal filtered(
         bool starred, string tags,
-        date date_start, date date_end
+        date date_start, date date_end,
+        bool strict
     )
     signal restoredEntries()
 

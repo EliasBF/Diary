@@ -137,9 +137,9 @@ void DiaryApplication::setRootAndLoad(QObject *root) {
     );
     QObject::connect(
         this->root,
-        SIGNAL(filtered(bool, QString, QDateTime, QDateTime)),
+        SIGNAL(filtered(bool, QString, QDateTime, QDateTime, bool)),
         this,
-        SLOT(sendFilteredEntries(bool, QString, QDateTime, QDateTime))
+        SLOT(sendFilteredEntries(bool, QString, QDateTime, QDateTime, bool))
     );
     QObject::connect(
         this->root,
@@ -197,17 +197,32 @@ void DiaryApplication::sendEntries() {
 }
 
 void DiaryApplication::sendFilteredEntries(
-    bool starred, QString tags, QDateTime date_start, QDateTime date_end
+    bool starred, QString tags,
+    QDateTime date_start, QDateTime date_end,
+    bool strict
 )
 {
     QStringList tags_list;
     if ( tags.count() > 0 ) {
-        tags_list = tags.split("/");
+        if ( tags.contains("/") ) {
+            tags_list = tags.split("/");
+        }
+        else {
+            tags_list << tags;
+        }
     }
 
     auto filter_list = this->active_journal->filter(
-        tags_list, date_start, date_end, starred, false
+        tags_list, date_start, date_end, starred, strict
     );
+
+    if ( filter_list.isEmpty() ) {
+        QMetaObject::invokeMethod(
+            this->root->findChild<QQuickWindow*>("main_window"),
+            "no_match_filter"
+        );
+        return;
+    }
     
     QVariantMap entries;
     int index = 0;
@@ -321,9 +336,21 @@ void DiaryApplication::loadJournal(QString name) {
     );
     QObject::connect(
         this->root,
+        SIGNAL(updatedInFilter(QString, QString, bool)),
+        this->active_journal,
+        SLOT(update_entry(QString, QString, bool))
+    );
+    QObject::connect(
+        this->root,
         SIGNAL(deletedEntry(int)),
         this->active_journal,
         SLOT(delete_entry(int))
+    );
+    QObject::connect(
+        this->root,
+        SIGNAL(deletedInFilter(QString)),
+        this->active_journal,
+        SLOT(delete_entry(QString))
     );
 
     this->root->setProperty(

@@ -1,5 +1,4 @@
 import QtQuick 2.4
-
 import Material 0.1
 import Material.ListItems 0.1 as Lists 
 import QtQuick.Layouts 1.2
@@ -11,6 +10,7 @@ Page {
     id: page
 
     property alias entries: entries_list.model
+    property alias snackbar: snackbar
     property string journal_name
     property bool list_filtered: false
 
@@ -217,7 +217,12 @@ Page {
                             iconName: "awesome/trash"
                             onClicked: {
                                 entry_menu.close();
-                                root.app.deletedEntry(index);
+                                if ( page.list_filtered ) {
+                                    root.app.deletedInFilter(model.title)
+                                }
+                                else {
+                                    root.app.deletedEntry(index);
+                                }
                                 root.app.journal_entries_model._delete(index);
                             }
                         }
@@ -458,12 +463,21 @@ Page {
 
                 onClicked: {
                     page.current_entry.starred = !selected;
-                    root.app.updatedEntry(
-                        page.current_entry.title,
-                        page.current_entry.body,
-                        page.current_entry.starred,
-                        page.current_entry.index
-                    );
+                    if ( page.list_filtered ) {
+                        root.app.updatedInFilter(
+                            page.current_entry.title,
+                            page.current_entry.body,
+                            page.current_entry.starred
+                        );
+                    }
+                    else {
+                        root.app.updatedEntry(
+                            page.current_entry.title,
+                            page.current_entry.body,
+                            page.current_entry.starred,
+                            page.current_entry.index
+                        );
+                    }
 
                     root.app.journal_entries_model.update(page.current_entry);
                 }
@@ -765,13 +779,21 @@ Page {
                             page.content.new_entry = false;
                         }
                         else {
-                            root.app.updatedEntry(
-                                page.current_entry.title,
-                                page.current_entry.body,
-                                page.current_entry.starred,
-                                page.current_entry.index ? page.current_entry.index : 0
-                            );
-
+                            if ( page.list_filtered ) {
+                                root.app.updatedInFilter(
+                                    page.current_entry.title,
+                                    page.current_entry.body,
+                                    page.current_entry.starred
+                                );
+                            }
+                            else {
+                                root.app.updatedEntry(
+                                    page.current_entry.title,
+                                    page.current_entry.body,
+                                    page.current_entry.starred,
+                                    page.current_entry.index ? page.current_entry.index : 0
+                                );
+                            }
 
                             if ( page.content.sync ) {
                                 root.app.journal_entries_model.update(
@@ -837,12 +859,21 @@ Page {
                     page.current_entry.reset();
                 }
                 else {
-                    root.app.updatedEntry(
-                        page.current_entry.title,
-                        page.current_entry.body,
-                        page.current_entry.starred,
-                        page.current_entry.index ? page.current_entry.index : 0
-                    );
+                    if ( page.list_filtered ) {
+                        root.app.updatedInFilter(
+                            page.current_entry.title,
+                            page.current_entry.body,
+                            page.current_entry.starred
+                        );
+                    }
+                    else {
+                        root.app.updatedEntry(
+                            page.current_entry.title,
+                            page.current_entry.body,
+                            page.current_entry.starred,
+                            page.current_entry.index ? page.current_entry.index : 0
+                        );
+                    }
                     
                     if ( page.content.sync ) {
                         root.app.journal_entries_model.update(
@@ -883,15 +914,27 @@ Page {
                     page.current_entry.reset();
                 }
                 else {
-                    root.app.updatedEntry(
-                        Qt.formatDateTime(
-                            (page.current_entry.date ? page.current_entry.date : new Date()),
-                            ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
-                        ),
-                        page.current_entry.body,
-                        page.current_entry.starred,
-                        page.current_entry.index ? page.current_entry.index : 0
-                    );
+                    if ( page.list_filtered ) {
+                        root.app.updatedInFilter(
+                            Qt.formatDateTime(
+                                (page.current_entry.date ? page.current_entry.date : new Date()),
+                                ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
+                            ),
+                            page.current_entry.body,
+                            page.current_entry.starred
+                        );
+                    }
+                    else {
+                        root.app.updatedEntry(
+                            Qt.formatDateTime(
+                                (page.current_entry.date ? page.current_entry.date : new Date()),
+                                ("dd '" + qsTr("de") + "' MMMM '" + qsTr("de") + "' yyyy")
+                            ),
+                            page.current_entry.body,
+                            page.current_entry.starred,
+                            page.current_entry.index ? page.current_entry.index : 0
+                        );
+                    }
 
                     if ( page.content.sync ) {
                         root.app.journal_entries_model.update(
@@ -919,7 +962,12 @@ Page {
                 page.body.state = "stand";
                 page.header.state = "stand";
                 if ( !page.content.sync ) {
-                    root.app.deletedEntry(0);
+                    if ( page.list_filtered ) {
+                        root.app.deletedInFilter(page.current_entry.title);
+                    }
+                    else {
+                        root.app.deletedEntry(0);
+                    }
                 }
                 page.current_entry.reset();
                 snackbar.open(qsTr("Entrada descartada"));

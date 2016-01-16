@@ -80,6 +80,26 @@ void Journal::update_entry(QString title, QString body,
     entry = NULL;
 }
 
+void Journal::update_entry(QString title, QString body, bool starred) {
+    int index_one = 0;
+    int index_two = this->length() / 2;
+    int index;
+    while ( true ) {
+        if ( this->entries.at(index_one)->property("title") == title ) {
+            index = index_one;
+            break;
+        }
+        else if ( this->entries.at(index_two)->property("title") == title ) {
+            index = index_two;
+            break;
+        }
+
+        index_one++;
+        index_two++;
+    }
+    this->update_entry(title, body, starred, index);
+}
+
 void Journal::delete_entry(int index) {
     QStringList tags;
     QMetaObject::invokeMethod(
@@ -89,6 +109,26 @@ void Journal::delete_entry(int index) {
     );
     this->removeTags(tags);
     this->entries.removeAt(index);
+}
+
+void Journal::delete_entry(QString title) {
+    int index_one = 0;
+    int index_two = this->length() / 2;
+    int index;
+    while ( true ) {
+        if ( this->entries.at(index_one)->property("title") == title ) {
+            index = index_one;
+            break;
+        }
+        else if ( this->entries.at(index_two)->property("title") == title ) {
+            index = index_two;
+            break;
+        }
+
+        index_one++;
+        index_two++;
+    }
+    this->delete_entry(index);
 }
 
 void Journal::sort() {

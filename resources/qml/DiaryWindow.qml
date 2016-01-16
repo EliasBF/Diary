@@ -53,6 +53,10 @@ ApplicationWindow {
         key_dialog.state = "warning";
     }
 
+    function no_match_filter() {
+        main_page.snackbar.open(qsTr("No se encontraron entradas"));
+    }
+
     initialPage: MainPage { id: main_page }
 
     SwitchDialog { 
@@ -97,7 +101,8 @@ ApplicationWindow {
                 starred, 
                 string_tags,
                 date_start ? date_start : new Date(1,1,1),
-                date_end ? date_end : new Date(25,10,275759)
+                date_end ? date_end : new Date(25,10,275759),
+                strict
             );
         }
     }
