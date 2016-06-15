@@ -265,8 +265,8 @@ Page {
                             iconName: "content/filter_list"
 
                             onTriggered: {
-                                if ( entries_list.count == 0 ) {
-                                    snackbar.open(qsTr("Debes tener entradas para poder filtrarlas"));
+                                if ( entries_list.count < 10 ) {
+                                    snackbar.open(qsTr("Debes tener como minimo 10 entradas para poder realizar filtros"));
                                     return;
                                 }
                                 else {
@@ -636,8 +636,8 @@ Page {
                 id: body_label
                 anchors.centerIn: parent
                 horizontalAlignment: Text.AlignJustify
-                wrapMode: Text.WordWrap
-                width: parent.width / 2
+                wrapMode: Text.WrapAnywhere
+                width: parent.width * 0.7
                 height: parent.height * 0.9
                 visible: content.state == "reading"
             }

@@ -38,18 +38,43 @@ Dialog {
     positiveButtonText: qsTr("Aceptar")
     negativeButtonText: qsTr("Salir")
 
-    minimumWidth: parent.width * 0.4
-    title: "Diary"
-    text: qsTr("Ingresa tu frase secreta para acceder")
+    minimumWidth: parent.width * 0.6
     dismissOnTap: false
 
-    TextField {
-        id: key_text
+    ColumnLayout {
 
         width: dialog.width - (dialog.contentMargins * 2)
+        height: 400
+        spacing: 10
 
-        onTextChanged: {
-            if ( hasError ) { dialog.state = "normal"; }
+        Image {
+            Layout.alignment: Qt.AlignHCenter
+            source: "qrc:/resources/images/logo.png"
+            sourceSize {
+                width: 280
+                height: 124
+            }
+        }
+
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true
+            style: "title"
+            text: qsTr("Ingresa tu frase para ingresar")
+            color: Theme.accentColor
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        TextField {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.minimumWidth: parent.width * 0.6
+            id: key_text
+            echoMode: TextInput.Password
+
+            onTextChanged: {
+                if ( hasError ) { dialog.state = "normal"; }
+            }
         }
     }
 
